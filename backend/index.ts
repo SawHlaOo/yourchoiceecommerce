@@ -4,9 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
 import { isDatabaseConfigured, prisma } from "./lib/prisma.js";
-import { router as usersRouter } from "./routes/users.js";
-import { router as productsRouter } from "./routes/products.js";
-import { router as featureFlagsRouter } from "./routes/featureFlags.js";
+import { apiRouter } from "./routes/api.js";
 import { apiLimiter } from "./middlewares/rateLimit.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -28,7 +26,7 @@ const openApiDocument = {
   },
   servers: [
     {
-      url: `http://localhost:${process.env.PORT || 8800}`,
+      url: `http://localhost:${process.env.PORT || 8800}/api/v1`,
       description: "Local development server",
     },
   ],
@@ -43,9 +41,67 @@ const openApiDocument = {
     schemas: {
       ErrorResponse: {
         type: "object",
+        required: ["success", "error"],
         properties: {
           success: { type: "boolean" },
           error: { type: "string" },
+        },
+      },
+      SuccessResponse: {
+        type: "object",
+        required: ["success"],
+        properties: {
+          success: { type: "boolean" },
+        },
+      },
+      LoginRequest: {
+        type: "object",
+        required: ["username", "password"],
+        properties: {
+          username: { type: "string", minLength: 1 },
+          password: { type: "string", minLength: 1 },
+        },
+      },
+      RegistrationRequest: {
+        type: "object",
+        required: ["name", "username", "email", "password"],
+        properties: {
+          name: { type: "string", minLength: 1 },
+          username: { type: "string", minLength: 3 },
+          email: { type: "string", format: "email" },
+          password: { type: "string", minLength: 6 },
+          bio: { type: "string" },
+          role: { type: "string", enum: ["USER"], default: "USER" },
+        },
+      },
+      ProductRequest: {
+        type: "object",
+        required: ["name"],
+        properties: {
+          name: { type: "string", minLength: 1 },
+          description: { type: "string" },
+          image: { type: "string", format: "uri" },
+          logo: { type: "string", format: "uri" },
+          badge: { type: "string" },
+        },
+      },
+      ProductUpdateRequest: {
+        type: "object",
+        properties: {
+          name: { type: "string", minLength: 1 },
+          description: { type: "string" },
+          image: { type: "string", format: "uri" },
+          logo: { type: "string", format: "uri" },
+          badge: { type: "string" },
+        },
+      },
+      FeatureFlagRequest: {
+        type: "object",
+        required: ["key"],
+        properties: {
+          key: { type: "string", minLength: 2 },
+          enabled: { type: "boolean" },
+          description: { type: "string" },
         },
       },
       User: {
@@ -92,6 +148,14 @@ const openApiDocument = {
           description: { type: "string", nullable: true },
           createdAt: { type: "string", format: "date-time" },
           updatedAt: { type: "string", format: "date-time" },
+        },
+      },
+      FeatureFlagResponse: {
+        type: "object",
+        required: ["success", "data"],
+        properties: {
+          success: { type: "boolean" },
+          data: { $ref: "#/components/schemas/FeatureFlag" },
         },
       },
     },
@@ -152,6 +216,29 @@ const openApiDocument = {
               },
             },
           },
+        },
+      },
+    },
+    "/register": {
+      post: {
+        summary: "Deprecated registration endpoint",
+        description: "Use POST /users instead. This endpoint is retained for compatibility.",
+        deprecated: true,
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/RegistrationRequest" },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "New user created",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/AuthResponse" } } },
+          },
+          400: { description: "Validation error", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          409: { description: "Username or email already exists", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
         },
       },
     },
@@ -367,6 +454,22 @@ const openApiDocument = {
               },
             },
           },
+        },
+      },
+    },
+    "/game/{id}": {
+      get: {
+        summary: "Deprecated singular game endpoint",
+        description: "Use GET /games/{id} instead. This endpoint is retained for compatibility.",
+        deprecated: true,
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer", minimum: 1 } }],
+        responses: {
+          200: {
+            description: "Game details",
+            content: { "application/json": { schema: { type: "object", properties: { success: { type: "boolean" }, data: { $ref: "#/components/schemas/Product" } } } } },
+          },
+          400: { description: "Invalid game ID", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          404: { description: "Game not found", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
         },
       },
     },
@@ -675,6 +778,44 @@ const openApiDocument = {
         },
       },
     },
+    "/dev/feature-flags": {
+      post: {
+        summary: "Create a feature flag in development",
+        description: "Available only when NODE_ENV is not production.",
+        requestBody: {
+          required: true,
+          content: { "application/json": { schema: { $ref: "#/components/schemas/FeatureFlagRequest" } } },
+        },
+        responses: {
+          201: { description: "Feature flag created", content: { "application/json": { schema: { $ref: "#/components/schemas/FeatureFlagResponse" } } } },
+          400: { description: "Validation error", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+        },
+      },
+    },
+    "/dev/feature-flags/{key}": {
+      patch: {
+        summary: "Update a feature flag in development",
+        description: "Available only when NODE_ENV is not production.",
+        parameters: [{ name: "key", in: "path", required: true, schema: { type: "string" } }],
+        requestBody: {
+          required: true,
+          content: { "application/json": { schema: { $ref: "#/components/schemas/FeatureFlagRequest" } } },
+        },
+        responses: {
+          200: { description: "Feature flag updated", content: { "application/json": { schema: { $ref: "#/components/schemas/FeatureFlagResponse" } } } },
+          400: { description: "Validation error", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+        },
+      },
+      delete: {
+        summary: "Delete a feature flag in development",
+        description: "Available only when NODE_ENV is not production.",
+        parameters: [{ name: "key", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          200: { description: "Feature flag deleted", content: { "application/json": { schema: { $ref: "#/components/schemas/SuccessResponse" } } } },
+          400: { description: "Unable to delete feature flag", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+        },
+      },
+    },
   },
 };
 
@@ -702,6 +843,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(apiLimiter);
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
+app.get("/swagger", (_req, res) => res.redirect("/docs/"));
+app.get("/swagger/", (_req, res) => res.redirect("/docs/"));
 app.get("/swagger-ui", (_req, res) => res.redirect("/swagger-ui/"));
 app.get("/swagger-ui/", swaggerUi.setup(openApiDocument));
 app.get("/swagger-ui/index.html", swaggerUi.setup(openApiDocument));
@@ -732,9 +875,7 @@ app.get('/ready', async (_req, res) => {
   }
 });
 
-app.use(usersRouter);
-app.use(productsRouter);
-app.use(featureFlagsRouter);
+app.use("/api/v1", apiRouter);
 
 app.use(errorHandler);
 

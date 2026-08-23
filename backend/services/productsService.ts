@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma.js";
+import { productsRepository } from "../repositories/productsRepository.js";
 
 const defaults = {
   image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80",
@@ -7,122 +7,80 @@ const defaults = {
 
 export const productsService = {
   async listGames() {
-    return prisma.game.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        productCards: true,
-        sections: { include: { section: true } },
-      },
-    });
+    return productsRepository.listGames();
   },
 
   async getGame(id: number) {
-    return prisma.game.findUnique({
-      where: { id },
-      include: {
-        productCards: true,
-        sections: { include: { section: true } },
-      },
-    })
+    return productsRepository.findGameById(id);
   },
 
   async listApps() {
-    return prisma.app.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        productCards: true,
-        sections: { include: { section: true } },
-      },
-    });
+    return productsRepository.listApps();
   },
 
   async getApp(id: number) {
-    return prisma.app.findUnique({
-      where: { id },
-      include: {
-        productCards: true,
-        sections: { include: { section: true } },
-      },
-    });
+    return productsRepository.findAppById(id);
   },
 
   async listPowerPoints() {
-    return prisma.powerpoint.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        productCards: true,
-        sections: { include: { section: true } },
-      },
-    });
+    return productsRepository.listPowerPoints();
   },
 
   async getPowerPoint(id: number) {
-    return prisma.powerpoint.findUnique({
-      where: { id },
-      include: {
-        productCards: true,
-        sections: { include: { section: true } },
-      },
-    });
+    return productsRepository.findPowerPointById(id);
   },
 
   async createGame(input: { name: string; description?: string; image?: string; logo?: string; badge?: string }) {
-    return prisma.game.create({
-      data: {
-        name: input.name,
-        description: input.description,
-        badge: input.badge,
-        image: input.image || defaults.image,
-        logo: input.logo || defaults.logo,
-      },
+    return productsRepository.createGame({
+      name: input.name,
+      description: input.description,
+      badge: input.badge,
+      image: input.image || defaults.image,
+      logo: input.logo || defaults.logo,
     });
   },
 
   async updateGame(id: number, data: any) {
-    return prisma.game.update({ where: { id }, data });
+    return productsRepository.updateGame(id, data);
   },
 
   async deleteGame(id: number) {
-    await prisma.game.delete({ where: { id } });
+    await productsRepository.deleteGame(id);
   },
 
   async createApp(input: { name: string; description?: string; image?: string; logo?: string; badge?: string }) {
-    return prisma.app.create({
-      data: {
-        name: input.name,
-        description: input.description,
-        badge: input.badge,
-        image: input.image || defaults.image,
-        logo: input.logo || defaults.logo,
-      },
+    return productsRepository.createApp({
+      name: input.name,
+      description: input.description,
+      badge: input.badge,
+      image: input.image || defaults.image,
+      logo: input.logo || defaults.logo,
     });
   },
 
   async updateApp(id: number, data: any) {
-    return prisma.app.update({ where: { id }, data });
+    return productsRepository.updateApp(id, data);
   },
 
   async deleteApp(id: number) {
-    await prisma.app.delete({ where: { id } });
+    await productsRepository.deleteApp(id);
   },
 
   async createPowerPoint(input: { name: string; description?: string; image?: string; logo?: string; badge?: string }) {
-    return prisma.powerpoint.create({
-      data: {
-        name: input.name,
-        description: input.description,
-        badge: input.badge,
-        image: input.image || defaults.image,
-        logo: input.logo || defaults.logo,
-      },
+    return productsRepository.createPowerPoint({
+      name: input.name,
+      description: input.description,
+      badge: input.badge,
+      image: input.image || defaults.image,
+      logo: input.logo || defaults.logo,
     });
   },
 
   async updatePowerPoint(id: number, data: any) {
-    return prisma.powerpoint.update({ where: { id }, data });
+    return productsRepository.updatePowerPoint(id, data);
   },
 
   async deletePowerPoint(id: number) {
-    await prisma.powerpoint.delete({ where: { id } });
+    await productsRepository.deletePowerPoint(id);
   },
 };

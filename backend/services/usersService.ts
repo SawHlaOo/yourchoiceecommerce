@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { prisma } from "../lib/prisma.js";
+import { usersRepository } from "../repositories/usersRepository.js";
 
 const sanitizeUser = (user: Record<string, unknown>) => {
   const { password, ...rest } = user;
@@ -9,7 +9,7 @@ const sanitizeUser = (user: Record<string, unknown>) => {
 
 export const usersService = {
   async verify(id: number) {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await usersRepository.findById(id);
     if (!user) {
       return null;
     }
@@ -18,7 +18,7 @@ export const usersService = {
   },
 
   async login(input: { username: string; password: string }) {
-    const user = await prisma.user.findFirst({ where: { username: input.username } });
+    const user = await usersRepository.findByUsername(input.username);
 
     if (user && (await bcrypt.compare(input.password, user.password))) {
       const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
@@ -39,20 +39,18 @@ export const usersService = {
     bio?: string;
     role: "USER" | "ADMIN";
   }) {
-    const existing = await prisma.user.findFirst({ where: { OR: [{ username: input.username }, { email: input.email }] } });
+    const existing = await usersRepository.findByUsernameOrEmail(input.username, input.email);
     if (existing) {
       return null;
     }
 
-    const user = await prisma.user.create({
-      data: {
-        name: input.name,
-        username: input.username,
-        email: input.email,
-        bio: input.bio,
-        role: input.role,
-        password: await bcrypt.hash(input.password, 10),
-      },
+    const user = await usersRepository.create({
+      name: input.name,
+      username: input.username,
+      email: input.email,
+      bio: input.bio,
+      role: input.role,
+      password: await bcrypt.hash(input.password, 10),
     });
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
@@ -64,12 +62,12 @@ export const usersService = {
   },
 
   async deleteUser(id: number) {
-    const existing = await prisma.user.findUnique({ where: { id } });
+    const existing = await usersRepository.findById(id);
     if (!existing) {
       return false;
     }
 
-    await prisma.user.delete({ where: { id } });
+    await usersRepository.deleteById(id);
     return true;
   },
 };

@@ -1,5 +1,6 @@
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
 const API_URL = (configuredApiUrl || (import.meta.env.DEV ? 'http://localhost:8800' : '')).replace(/\/+$/, '');
+const API_VERSION = '/api/v1';
 
 async function request(path, { method = 'GET', body, headers = {}, auth = true } = {}) {
   if (!API_URL) {
@@ -22,7 +23,7 @@ async function request(path, { method = 'GET', body, headers = {}, auth = true }
 
   let response;
   try {
-    response = await fetch(`${API_URL}${path}`, options);
+    response = await fetch(`${API_URL}${API_VERSION}${path}`, options);
   } catch {
     throw new Error('Unable to reach the API. Please try again shortly.');
   }

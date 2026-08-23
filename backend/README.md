@@ -48,6 +48,28 @@ Deploy `frontend` as a separate Vercel project with its Root Directory set to
 slash), then redeploy the frontend. Add the frontend URL to `FRONTEND_URLS` in
 the backend and redeploy the backend.
 
+API versioning
+
+The current API is exposed under the explicit `/api/v1` base path. Resource
+routes remain modular under `routes/`, with controllers delegating business
+logic to services. Examples:
+
+- `GET /api/v1/games`
+- `POST /api/v1/login`
+- `GET /api/v1/feature-flags`
+
+The OpenAPI documentation at `/docs` uses `/api/v1` as its server base URL.
+The frontend client adds this version prefix centrally, so feature-specific API
+modules only define resource paths.
+
+Backend layers
+
+- `routes/` defines versioned HTTP routes and middleware composition.
+- `controllers/` translates HTTP requests into service calls and responses.
+- `services/` owns business rules, validation decisions, authentication, and tokens.
+- `repositories/` owns Prisma queries and database persistence.
+- `lib/` contains shared infrastructure such as Prisma, Redis, and queues.
+
 Health and readiness endpoints
 
 - Liveness: GET /healthz — returns 200 when the server process is alive
