@@ -3,7 +3,7 @@ import { Button, Card, CardContent, CardMedia, Chip, Typography } from '@mui/mat
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80';
 const TELEGRAM_URL = import.meta.env.VITE_TELEGRAM_URL?.trim() || 'https://t.me/';
 
-export default function ProductCard({ item, type }) {
+export default function ProductCard({ item }) {
   const image = item?.image || item?.logo || FALLBACK_IMAGE;
   const title = item?.name || 'Untitled product';
 
