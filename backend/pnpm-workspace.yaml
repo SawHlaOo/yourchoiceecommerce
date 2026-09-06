@@ -1,0 +1,8 @@
+allowBuilds:
+  '@prisma/engines': true
+  '@scarf/scarf': false
+  bcrypt: true
+  better-sqlite3: false
+  esbuild: true
+  msgpackr-extract: true
+  prisma: true
