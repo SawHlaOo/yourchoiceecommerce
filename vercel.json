@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "installCommand": "cd backend && npm install",
-  "buildCommand": "cd backend && npm run build",
+  "installCommand": "npm install --prefix backend",
+  "buildCommand": "npm run build --prefix backend",
   "builds": [
     {
       "src": "backend/index.ts",
