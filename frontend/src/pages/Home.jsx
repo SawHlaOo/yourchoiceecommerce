@@ -1,8 +1,7 @@
-import { Alert, Box, Button, CircularProgress, Grid, Paper, Stack, Typography } from '@mui/material';
-import { ArrowForward, Bolt, LocalShipping, Lock, SupportAgent } from '@mui/icons-material';
+import { Alert, Box, Button, CircularProgress, Container, Grid, Paper, Stack, TextField, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
+import { useTheme } from '@mui/material/styles';
 import { useQuery } from '@tanstack/react-query';
-import { useLocation } from 'react-router';
 import { productApi } from '../api/productApi';
 import ProductCard from '../components/ProductCard';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
@@ -37,9 +36,10 @@ function CatalogSection({ title, type, items, isLoading, search, filter }) {
 }
 
 export default function Home() {
-  const location = useLocation();
-  const [search] = useState(location.state?.search || '');
+  const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const promotions = useFeatureFlag('promotions');
   const popular = useFeatureFlag('popular');
   const newArrivals = useFeatureFlag('new_arrivals');
@@ -49,27 +49,16 @@ export default function Home() {
   const error = games.error || apps.error || powerpoints.error;
 
   return (
-    <Box sx={{ pb: 6 }}>
-      <Paper elevation={0} sx={{ p: { xs: 3, md: 7 }, borderRadius: 4, background: 'linear-gradient(120deg, #15233d 0%, #263e68 60%, #ef6c3b 160%)', color: 'white', overflow: 'hidden', position: 'relative' }}>
-        <Box sx={{ position: 'absolute', width: 320, height: 320, borderRadius: '50%', bgcolor: 'rgba(255,255,255,.08)', right: -80, top: -120 }} />
-        <Stack spacing={2.5} maxWidth={680} position="relative">
-          <Typography variant="overline" sx={{ color: '#ffb49a', fontWeight: 800, letterSpacing: '.18em' }}>DIGITAL GOODS, SIMPLIFIED</Typography>
-          <Typography component="h1" sx={{ fontSize: { xs: '2.4rem', md: '4.5rem' }, lineHeight: .98, fontWeight: 900, letterSpacing: '-.06em' }}>Find what makes your work and play better.</Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,.78)', maxWidth: 540, fontSize: { md: '1.1rem' } }}>Trusted games, apps, and presentation tools—curated for quality and delivered instantly.</Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-            <Button variant="contained" color="secondary" endIcon={<ArrowForward />} onClick={() => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })} sx={{ bgcolor: '#ef6c3b', '&:hover': { bgcolor: '#d9562c' }, color: 'white', px: 3, py: 1.3, borderRadius: 2, fontWeight: 800, textTransform: 'none' }}>Explore collection</Button>
-            <Button variant="outlined" onClick={() => setFilter('new_arrivals')} sx={{ color: 'white', borderColor: 'rgba(255,255,255,.5)', px: 3, py: 1.3, borderRadius: 2, fontWeight: 800, textTransform: 'none' }}>See new arrivals</Button>
-          </Stack>
+    <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
+      <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, border: '1px solid', borderColor: 'divider', background: isDarkMode ? 'linear-gradient(135deg, #172554, #1e293b)' : 'linear-gradient(135deg, #eff6ff, #f5f3ff)', color: isDarkMode ? '#f8fafc' : 'text.primary' }}>
+        <Stack spacing={2} maxWidth={720}>
+          <Typography component="h1" variant="h3" fontWeight={800}>hey! discover your needs </Typography>
+          <Typography sx={{ color: isDarkMode ? '#dbeafe' : 'text.secondary' }}>We sell games, apps, and presentation templates based on trust and quality.</Typography>
+          <TextField label="Search here" value={search} onChange={(event) => setSearch(event.target.value)} fullWidth inputProps={{ 'aria-label': 'Search here' }} sx={isDarkMode ? { '& .MuiInputLabel-root': { color: '#dbeafe' }, '& .MuiInputLabel-root.Mui-focused': { color: '#93c5fd' }, '& .MuiOutlinedInput-root': { color: '#f8fafc', '& fieldset': { borderColor: 'rgba(219, 234, 254, 0.45)' }, '&:hover fieldset': { borderColor: '#bfdbfe' }, '&.Mui-focused fieldset': { borderColor: '#93c5fd' } } } : undefined} />
         </Stack>
       </Paper>
 
-      <Grid container spacing={2} sx={{ my: 3 }}>
-        {[['Games', games.data?.length || 0, 'game'], ['Apps', apps.data?.length || 0, 'app'], ['Templates', powerpoints.data?.length || 0, 'powerpoint']].map(([label, count, type]) => (
-          <Grid item xs={12} sm={4} key={type}><Button fullWidth onClick={() => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })} sx={{ justifyContent: 'space-between', p: 2.2, border: '1px solid', borderColor: 'divider', borderRadius: 2, color: 'text.primary', textTransform: 'none', '&:hover': { borderColor: 'primary.main', bgcolor: 'primary.50' } }}><Stack alignItems="flex-start"><Typography fontWeight={800}>{label}</Typography><Typography variant="body2" color="text.secondary">{count} products to explore</Typography></Stack><ArrowForward color="primary" /></Button></Grid>
-        ))}
-      </Grid>
-
-      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 3 }} id="catalog">
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 3 }}>
         {promotions.data !== false ? <Button variant={filter === 'promotions' ? 'contained' : 'outlined'} onClick={() => setFilter(filter === 'promotions' ? '' : 'promotions')}>Promotions</Button> : null}
         {popular.data !== false ? <Button variant={filter === 'popular' ? 'contained' : 'outlined'} onClick={() => setFilter(filter === 'popular' ? '' : 'popular')}>Popular</Button> : null}
         {newArrivals.data !== false ? <Button variant={filter === 'new_arrivals' ? 'contained' : 'outlined'} onClick={() => setFilter(filter === 'new_arrivals' ? '' : 'new_arrivals')}>New arrivals</Button> : null}
@@ -79,11 +68,6 @@ export default function Home() {
       <CatalogSection title="Games" type="game" items={games.data || []} isLoading={games.isLoading} search={search} filter={filter} />
       <CatalogSection title="Apps" type="app" items={apps.data || []} isLoading={apps.isLoading} search={search} filter={filter} />
       <CatalogSection title="Presentation templates" type="powerpoint" items={powerpoints.data || []} isLoading={powerpoints.isLoading} search={search} filter={filter} />
-      <Grid container spacing={2} sx={{ mt: 5 }}>
-        {[['Fast delivery', 'Get your digital product without the wait.', <Bolt />], ['Secure checkout', 'Your account and purchase are protected.', <Lock />], ['Always here', 'Friendly support when you need it.', <SupportAgent />], ['Instant access', 'Simple, reliable digital delivery.', <LocalShipping />]].map(([title, copy, icon]) => (
-          <Grid item xs={12} sm={6} md={3} key={title}><Stack direction="row" spacing={1.5} sx={{ p: 2, height: '100%', borderTop: '2px solid', borderColor: 'primary.main' }}><Box sx={{ color: 'primary.main' }}>{icon}</Box><Box><Typography fontWeight={800}>{title}</Typography><Typography variant="body2" color="text.secondary">{copy}</Typography></Box></Stack></Grid>
-        ))}
-      </Grid>
-    </Box>
+    </Container>
   );
 }
