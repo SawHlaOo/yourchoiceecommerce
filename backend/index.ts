@@ -17,6 +17,7 @@ if (process.env.VERCEL) {
   app.set("trust proxy", 1);
 }
 
+
 const openApiDocument = {
   openapi: "3.0.3",
   info: {
@@ -820,10 +821,15 @@ const openApiDocument = {
 };
 
 app.use(helmet());
-const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || "http://localhost:5173")
+const configuredOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://ecommerce-y4lw.vercel.app",
+  ...configuredOrigins,
+];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -909,5 +915,3 @@ if (!process.env.VERCEL) {
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
-
-
