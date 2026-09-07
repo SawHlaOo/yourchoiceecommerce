@@ -8,7 +8,7 @@ export default function App() {
     <>
       <Header />
       <AppDrawer />
-      <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <Outlet />
       </Container>
     </>
