@@ -10,9 +10,15 @@ import AppRouter from './AppRouter';
 import { authApi } from './api/authApi';
 import { AppContext, queryClient } from './appContext';
 
+const THEME_MODE_KEY = 'theme-mode';
+
 export default function AppProvider() {
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [mode, setMode] = useState('light');
+  const [mode, setModeState] = useState(() => {
+    if (typeof window === 'undefined') return 'light';
+    const storedMode = localStorage.getItem(THEME_MODE_KEY);
+    return storedMode === 'dark' ? 'dark' : 'light';
+  });
   const [user, setUser] = useState(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     try {
@@ -22,6 +28,13 @@ export default function AppProvider() {
       return null;
     }
   });
+
+  const setMode = useCallback((nextMode) => {
+    const resolvedMode = typeof nextMode === 'function' ? nextMode(mode) : nextMode;
+    const validMode = resolvedMode === 'dark' ? 'dark' : 'light';
+    setModeState(validMode);
+    localStorage.setItem(THEME_MODE_KEY, validMode);
+  }, [mode]);
 
   const theme = useMemo(() => createTheme({
     palette: mode === 'dark' ? {
@@ -62,6 +75,11 @@ export default function AppProvider() {
 
   useEffect(() => {
     const handleStorage = () => {
+      const storedMode = localStorage.getItem(THEME_MODE_KEY);
+      if (storedMode === 'light' || storedMode === 'dark') {
+        setModeState(storedMode);
+      }
+
       const stored = localStorage.getItem('user');
       try {
         setUser(stored ? JSON.parse(stored) : null);
