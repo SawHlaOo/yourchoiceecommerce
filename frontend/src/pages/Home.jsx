@@ -13,7 +13,7 @@ function CatalogSection({ title, items, isLoading, search, filter, wishlistIds, 
     const normalize = (value) => value?.toLowerCase().replace(/[_-]+/g, ' ').trim();
     return items.filter((item) => (!filter || normalize(item.badge) === normalize(filter)) && (!term || item.name?.toLowerCase().includes(term)));
   }, [items, search, filter]);
-  return <section className="mt-10"><h2 className="mb-4 text-2xl font-bold">{title}</h2>{isLoading ? <div className="flex justify-center py-10"><Spinner label={`Loading ${title}`} /></div> : <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">{visibleItems.map((item) => <ProductCard key={item.id} item={item} isFavorite={wishlistIds.has(item.id)} onFavorite={onFavorite} />)}{!visibleItems.length ? <div className="sm:col-span-2 lg:col-span-3"><Alert>No {title.toLowerCase()} match your search.</Alert></div> : null}</div>}</section>;
+  return <section className="mt-8 sm:mt-10"><h2 className="mb-4 text-xl font-bold sm:text-2xl">{title}</h2>{isLoading ? <div className="flex justify-center py-10"><Spinner label={`Loading ${title}`} /></div> : <div className="grid grid-cols-2 items-stretch gap-3 sm:gap-6 lg:grid-cols-3">{visibleItems.map((item) => <ProductCard key={item.id} item={item} isFavorite={wishlistIds.has(item.id)} onFavorite={onFavorite} />)}{!visibleItems.length ? <div className="col-span-2 lg:col-span-3"><Alert>No {title.toLowerCase()} match your search.</Alert></div> : null}</div>}</section>;
 }
 
 export default function Home() {

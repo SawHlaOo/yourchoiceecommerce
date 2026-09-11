@@ -21,7 +21,12 @@ export default function Header() {
           {isAdmin && location.pathname !== '/admin' ? <Button variant="ghost" onClick={() => navigate('/admin')}>Admin</Button> : null}
           <Button variant="ghost" onClick={() => navigate(user ? '/wishlist' : '/register')}><Icon name="heart" size={17} />Wishlist{user && wishlist.data?.length ? ` (${wishlist.data.length})` : ''}</Button>
         </nav>
-        <button type="button" aria-label="Toggle color theme" className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800" onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}><Icon name={mode === 'dark' ? 'sun' : 'moon'} /></button>
+        <nav className="flex items-center gap-0.5 sm:hidden" aria-label="Quick navigation">
+          <button type="button" aria-label={user ? 'Open profile' : 'Open login'} className="rounded-lg p-2 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600 active:scale-90 dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => navigate(user ? `/profile/${user.id}` : '/login')}><Icon name="user" size={18} /></button>
+          {isAdmin ? <button type="button" aria-label="Open admin dashboard" className="rounded-lg p-2 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600 active:scale-90 dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => navigate('/admin')}><Icon name="shield" size={18} /></button> : null}
+          <button type="button" aria-label="Open wishlist" className="relative rounded-lg p-2 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600 active:scale-90 dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => navigate(user ? '/wishlist' : '/register')}><Icon name="heart" size={18} />{user && wishlist.data?.length ? <span className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-blue-600 px-0.5 text-[9px] font-bold text-white">{wishlist.data.length}</span> : null}</button>
+        </nav>
+        <button type="button" aria-label="Toggle color theme" className="rounded-lg p-2 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600 active:scale-90 dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}><Icon name={mode === 'dark' ? 'sun' : 'moon'} /></button>
       </div>
     </header>
   );
