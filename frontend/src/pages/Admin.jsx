@@ -1,15 +1,9 @@
 import { useState } from 'react';
-import { Box, Button, Card, CardContent, CardMedia, Chip, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Switch, TextField, Typography, Stack, Alert } from '@mui/material';
+import { Box, Button, Card, CardContent, Chip, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Switch, TextField, Typography, Stack, Alert } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { featureFlagApi } from '../api/featureFlagApi';
 import { productApi } from '../api/productApi';
 import { authApi } from '../api/authApi';
-
-const PRODUCT_TYPES = [
-  { value: 'game', label: 'Game' },
-  { value: 'app', label: 'App' },
-  { value: 'powerpoint', label: 'Powerpoint' },
-];
 
 const PRODUCT_BADGES = [
   { value: '', label: 'No category' },
@@ -18,16 +12,31 @@ const PRODUCT_BADGES = [
   { value: 'Promotions', label: 'Promotions' },
 ];
 
-const emptyProductDraft = { type: 'game', name: '', description: '', image: '', logo: '', badge: '' };
+const emptyCardDraft = { name: '', description: '', image: '', price: '', originalPrice: '', brand: '', category: '', slug: '', badge: '', stock: 0, isActive: true };
+const optionalText = (value) => value.trim() ? value.trim() : undefined;
+
+const productCardPayload = (draft) => ({
+  ...draft,
+  name: draft.name.trim(),
+  image: draft.image.trim(),
+  description: optionalText(draft.description),
+  brand: optionalText(draft.brand),
+  category: optionalText(draft.category),
+  slug: optionalText(draft.slug),
+  badge: optionalText(draft.badge),
+  price: Number(draft.price),
+  originalPrice: draft.originalPrice === '' ? undefined : Number(draft.originalPrice),
+  stock: Number(draft.stock),
+});
 
 export default function Admin() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [openProduct, setOpenProduct] = useState(false);
   const [draft, setDraft] = useState({ key: '', enabled: false, description: '' });
-  const [productDraft, setProductDraft] = useState(emptyProductDraft);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [userDeleteId, setUserDeleteId] = useState('');
+  const [productCardDraft, setProductCardDraft] = useState(emptyCardDraft);
+  const [selectedProductCard, setSelectedProductCard] = useState(null);
+  const [openProductCard, setOpenProductCard] = useState(false);
 
   const { data: flags = [], isLoading: flagsLoading, error: flagsError } = useQuery({
     queryKey: ['feature-flags-admin'],
@@ -35,22 +44,10 @@ export default function Admin() {
     select: (response) => response?.data ?? []
   });
 
-  const { data: games = [], isLoading: gamesLoading, error: gamesError } = useQuery({
-    queryKey: ['games'],
-    queryFn: () => productApi.listGames(),
-    select: (response) => response?.data ?? []
-  });
- 
-  const { data: apps = [], isLoading: appsLoading, error: appsError } = useQuery({
-    queryKey: ['apps'],
-    queryFn: () => productApi.listApps(),
-    select: (response) => response?.data ?? []
-  });
- 
-  const { data: powerpoints = [], isLoading: powerpointsLoading, error: powerpointsError } = useQuery({
-    queryKey: ['powerpoints'],
-    queryFn: () => productApi.listPowerpoints(),
-    select: (response) => response?.data ?? []
+  const { data: productCards = [], isLoading: productCardsLoading, error: productCardsError } = useQuery({
+    queryKey: ['admin-products'],
+    queryFn: productApi.listAdminProducts,
+    select: (response) => response?.data ?? [],
   });
   
   
@@ -64,52 +61,22 @@ export default function Admin() {
     }
   });
 
-  const productMutation = useMutation({
-    mutationFn: (payload) => {
-      if (payload.type === 'game') return productApi.createGame(payload);
-      if (payload.type === 'app') return productApi.createApp(payload);
-      if (payload.type === 'powerpoint') return productApi.createPowerpoint(payload);
-      throw new Error('Unknown product type');
-    },
+  const productCardMutation = useMutation({
+    mutationFn: ({ id, payload }) => id ? productApi.updateProduct(id, payload) : productApi.createProduct(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['games'] });
-      queryClient.invalidateQueries({ queryKey: ['apps'] });
-      queryClient.invalidateQueries({ queryKey: ['powerpoints'] });
-      setOpenProduct(false);
-      setSelectedProduct(null);
-      setProductDraft(emptyProductDraft);
-    }
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setSelectedProductCard(null);
+      setProductCardDraft(emptyCardDraft);
+      setOpenProductCard(false);
+    },
   });
- 
-  const productUpdateMutation = useMutation({
-    mutationFn: ({ id, type, payload }) => {
-      if (type === 'game') return productApi.updateGame(id, payload);
-      if (type === 'app') return productApi.updateApp(id, payload);
-      if (type === 'powerpoint') return productApi.updatePowerpoint(id, payload);
-      throw new Error('Unknown product type');
-    },
+  const productCardDeactivateMutation = useMutation({
+    mutationFn: (id) => productApi.deactivateProduct(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['games'] });
-      queryClient.invalidateQueries({ queryKey: ['apps'] });
-      queryClient.invalidateQueries({ queryKey: ['powerpoints'] });
-      setOpenProduct(false);
-      setSelectedProduct(null);
-      setProductDraft(emptyProductDraft);
-    }
-  });
- 
-  const productDeleteMutation = useMutation({
-    mutationFn: ({ id, type }) => {
-      if (type === 'game') return productApi.deleteGame(id);
-      if (type === 'app') return productApi.deleteApp(id);
-      if (type === 'powerpoint') return productApi.deletePowerpoint(id);
-      throw new Error('Unknown product type');
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['games'] });
-      queryClient.invalidateQueries({ queryKey: ['apps'] });
-      queryClient.invalidateQueries({ queryKey: ['powerpoints'] });
-    }
   });
 
   const deleteUserMutation = useMutation({
@@ -135,36 +102,6 @@ export default function Admin() {
     }
   });
 
-  const handleOpenProductModal = (product = null, type = 'game') => {
-    if (product) {
-      setSelectedProduct({ id: product.id, type });
-      setProductDraft({
-        type,
-        name: product.name || '',
-        description: product.description || '',
-        image: product.image || '',
-        logo: product.logo || '',
-        badge: product.badge || '',
-      });
-    } else {
-      setSelectedProduct(null);
-      setProductDraft(emptyProductDraft);
-    }
-    setOpenProduct(true);
-  };
-
-  const handleSaveProduct = () => {
-    if (selectedProduct) {
-      productUpdateMutation.mutate({ id: selectedProduct.id, type: selectedProduct.type, payload: productDraft });
-      return;
-    }
-    productMutation.mutate(productDraft);
-  };
-
-  const handleDeleteProduct = (id, type) => {
-    productDeleteMutation.mutate({ id, type });
-  };
-
   const handleDeleteUser = () => {
     if (!userDeleteId) return;
     deleteUserMutation.mutate(Number(userDeleteId));
@@ -174,16 +111,13 @@ export default function Admin() {
  
   const errorMessage =
     flagsError?.message ||
-    gamesError?.message ||
-    appsError?.message ||
-    powerpointsError?.message ||
+    productCardsError?.message ||
     createMutation.error?.message ||
     updateMutation.error?.message ||
     removeMutation.error?.message ||
-    productMutation.error?.message ||
-    productUpdateMutation.error?.message ||
-    productDeleteMutation.error?.message ||
     deleteUserMutation.error?.message ||
+    productCardMutation.error?.message ||
+    productCardDeactivateMutation.error?.message ||
     null;
 
   return (
@@ -194,14 +128,42 @@ export default function Admin() {
           <Typography color="text.secondary">Manage feature flags, products, and admin tools.</Typography>
         </Box>
         <Stack direction="row" spacing={2} flexWrap="wrap">
-          <Button variant="outlined" onClick={() => handleOpenProductModal(null, 'game')}>Create game</Button>
-          <Button variant="outlined" onClick={() => handleOpenProductModal(null, 'app')}>Create app</Button>
-          <Button variant="outlined" onClick={() => handleOpenProductModal(null, 'powerpoint')}>Create powerpoint</Button>
           <Button variant="contained" onClick={() => setOpen(true)}>Create flag</Button>
         </Stack>
       </Stack>
 
       {errorMessage ? <Alert severity="error" sx={{ mb: 3 }}>{errorMessage}</Alert> : null}
+
+      <Box sx={{ mb: 4 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Box>
+            <Typography variant="h5" fontWeight={700}>Product cards</Typography>
+            <Typography color="text.secondary">Manage prices, stock, images, brands, categories, and status.</Typography>
+          </Box>
+          <Button variant="contained" onClick={() => { setSelectedProductCard(null); setProductCardDraft(emptyCardDraft); setOpenProductCard(true); }}>New product card</Button>
+        </Stack>
+        {productCardsLoading ? <CircularProgress /> : (
+          <Grid container spacing={2}>
+            {productCards.map((item) => (
+              <Grid item xs={12} md={6} key={item.id}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography variant="h6">{item.name}</Typography>
+                      <Chip label={item.isActive ? 'Active' : 'Inactive'} color={item.isActive ? 'success' : 'default'} size="small" />
+                    </Stack>
+                    <Typography>${Number(item.price).toFixed(2)} · Stock: {item.stock} · {item.brand || 'No brand'}</Typography>
+                    <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                      <Button size="small" onClick={() => { setSelectedProductCard(item.id); setProductCardDraft({ ...emptyCardDraft, ...item, price: item.price ?? '', originalPrice: item.originalPrice ?? '' }); setOpenProductCard(true); }}>Edit</Button>
+                      {item.isActive ? <Button size="small" color="error" onClick={() => productCardDeactivateMutation.mutate(item.id)}>Deactivate</Button> : null}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Box>
 
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>Feature flags</Typography>
@@ -242,41 +204,6 @@ export default function Admin() {
       </Box>
  
  
-      <Box sx={{ mb: 4 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-          <Typography variant="h5" fontWeight={700}>Product card management</Typography>
-          <Typography color="text.secondary">Create, view, and update detailed product cards.</Typography>
-        </Stack>
-        {[ 
-          { title: 'Games', items: games, loading: gamesLoading, type: 'game' },
-          { title: 'Apps', items: apps, loading: appsLoading, type: 'app' },
-          { title: 'Powerpoints', items: powerpoints, loading: powerpointsLoading, type: 'powerpoint' },
-        ].map(({ title, items, loading, type }) => (
-          <Box key={title} sx={{ mb: 4 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-              <Typography variant="h6" fontWeight={700}>{title}</Typography>
-              <Typography color="text.secondary">{items.length} cards</Typography>
-            </Stack>
-            {loading ? (
-              <Box display="flex" justifyContent="center" py={4}><CircularProgress /></Box>
-            ) : (
-              <Grid container spacing={2}>
-                {items.map((item) => (
-                  <Grid item xs={12} md={6} key={`${type}-${item.id}`}> 
-                    <ProductAdminCard
-                      item={item}
-                      type={type}
-                      onEdit={() => handleOpenProductModal(item, type)}
-                      onDelete={() => handleDeleteProduct(item.id, type)}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            )}
-          </Box>
-        ))}
-      </Box>
-
       <Box sx={{ mt: 4, p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
         <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>Debug / Admin user cleanup</Typography>
         <Typography color="text.secondary" sx={{ mb: 2 }}>
@@ -316,35 +243,22 @@ export default function Admin() {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openProduct} onClose={() => setOpenProduct(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{selectedProduct ? 'Edit product card' : 'Create product card'}</DialogTitle>
+      <Dialog open={openProductCard} onClose={() => { setOpenProductCard(false); setSelectedProductCard(null); setProductCardDraft(emptyCardDraft); }} fullWidth maxWidth="sm">
+        <DialogTitle>{selectedProductCard ? 'Edit product card' : 'Create product card'}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-           <FormControl fullWidth>
-             <InputLabel id="product-type-label">Product type</InputLabel>
-             <Select
-               labelId="product-type-label"
-               value={productDraft.type}
-               label="Product type"
-               onChange={(event) => setProductDraft({ ...productDraft, type: event.target.value })}
-               disabled={Boolean(selectedProduct)}
-             >
-               {PRODUCT_TYPES.map((option) => (
-                 <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
-               ))}
-             </Select>
-           </FormControl>
-           <TextField label="Name" value={productDraft.name} onChange={(event) => setProductDraft({ ...productDraft, name: event.target.value })} fullWidth />
-            <TextField label="Description" multiline minRows={3} value={productDraft.description} onChange={(event) => setProductDraft({ ...productDraft, description: event.target.value })} fullWidth />
-            <TextField label="Image URL" value={productDraft.image} onChange={(event) => setProductDraft({ ...productDraft, image: event.target.value })} fullWidth />
-            <TextField label="Logo URL" value={productDraft.logo} onChange={(event) => setProductDraft({ ...productDraft, logo: event.target.value })} fullWidth />
+            {[
+              ['name', 'Name'], ['image', 'Image URL'], ['brand', 'Brand'], ['category', 'Category'], ['slug', 'Slug'],
+              ['price', 'Price'], ['originalPrice', 'Original price'], ['stock', 'Stock'],
+            ].map(([field, label]) => <TextField key={field} label={label} type={['price', 'originalPrice', 'stock'].includes(field) ? 'number' : 'text'} value={productCardDraft[field]} onChange={(event) => setProductCardDraft({ ...productCardDraft, [field]: event.target.value })} required={['name', 'image', 'price', 'stock'].includes(field)} />)}
+            <TextField label="Description" multiline minRows={2} value={productCardDraft.description} onChange={(event) => setProductCardDraft({ ...productCardDraft, description: event.target.value })} />
             <FormControl fullWidth>
-              <InputLabel id="product-badge-label">Category</InputLabel>
+              <InputLabel id="product-card-badge-label">Product category</InputLabel>
               <Select
-                labelId="product-badge-label"
-                value={productDraft.badge}
-                label="Category"
-                onChange={(event) => setProductDraft({ ...productDraft, badge: event.target.value })}
+                labelId="product-card-badge-label"
+                value={productCardDraft.badge}
+                label="Product category"
+                onChange={(event) => setProductCardDraft({ ...productCardDraft, badge: event.target.value })}
               >
                 {PRODUCT_BADGES.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -353,55 +267,15 @@ export default function Admin() {
                 ))}
               </Select>
             </FormControl>
+            <FormControlLabel control={<Switch checked={Boolean(productCardDraft.isActive)} onChange={(event) => setProductCardDraft({ ...productCardDraft, isActive: event.target.checked })} />} label="Active" />
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenProduct(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleSaveProduct}>{selectedProduct ? 'Update' : 'Save'}</Button>
+          <DialogActions>
+            <Button onClick={() => { setOpenProductCard(false); setSelectedProductCard(null); setProductCardDraft(emptyCardDraft); }}>Cancel</Button>
+          <Button variant="contained" disabled={!productCardDraft.name || !productCardDraft.image || productCardDraft.price === '' || productCardDraft.stock === ''} onClick={() => productCardMutation.mutate({ id: selectedProductCard, payload: productCardPayload(productCardDraft) })}>Save</Button>
         </DialogActions>
       </Dialog>
     </Container>
-  );
-}
-
-function ProductAdminCard({ item, type, onEdit, onDelete }) {
-  const [imageSrc, setImageSrc] = useState(item.image || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80');
-
-  return (
-    <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardMedia
-        component="img"
-        height="180"
-        image={imageSrc}
-        alt={item.name}
-        onError={() => setImageSrc('https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80')}
-        sx={{ objectFit: 'cover' }}
-      />
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-        <Stack spacing={1}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">{item.name}</Typography>
-            <Chip label={item.badge || 'Featured'} size="small" />
-          </Stack>
- 
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-            {item.logo ? (
-              <Box component="img" src={item.logo} alt={`${item.name} logo`} sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover' }} />
-            ) : null}
-            <Typography variant="caption" color="text.secondary">Type: {type}</Typography>
-          </Stack>
-  
-          <Typography color="text.secondary" sx={{ mb: 1 }}>{item.description || 'No description available.'}</Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>ID: {item.id}</Typography>
-        </Stack>
-      </CardContent>
-      <Box sx={{ p: 2, pt: 0 }}>
-        <Stack direction="row" spacing={1}>
-          <Button size="small" variant="outlined" onClick={onEdit}>Edit</Button>
-          <Button size="small" color="error" variant="outlined" onClick={onDelete}>Delete</Button>
-        </Stack>
-      </Box>
-    </Card>
   );
 }
  

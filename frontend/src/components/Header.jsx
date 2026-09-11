@@ -1,5 +1,7 @@
 import { AppBar, Button, IconButton, Stack, Toolbar, Typography } from '@mui/material';
-import { DarkMode, LightMode, Menu as MenuIcon } from '@mui/icons-material';
+import { DarkMode, FavoriteBorder, LightMode, Menu as MenuIcon } from '@mui/icons-material';
+import { useQuery } from '@tanstack/react-query';
+import { productApi } from '../api/productApi';
 import { useLocation, useNavigate } from 'react-router';
 import { useApp } from '../appContext';
 
@@ -8,6 +10,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdmin = user?.role === 'ADMIN';
+  const wishlist = useQuery({ queryKey: ['wishlist'], queryFn: productApi.listWishlist, enabled: Boolean(user), select: (response) => response?.data ?? [] });
 
   return (
     <AppBar position="sticky" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -30,6 +33,7 @@ export default function Header() {
           {isAdmin && location.pathname !== '/admin' ? (
             <Button color="inherit" onClick={() => navigate('/admin')}>Admin</Button>
           ) : null}
+          <Button color="inherit" startIcon={<FavoriteBorder />} onClick={() => navigate(user ? '/wishlist' : '/register')}>Wishlist{user && wishlist.data?.length ? ` (${wishlist.data.length})` : ''}</Button>
           <IconButton color="inherit" onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
             {mode === 'dark' ? <LightMode /> : <DarkMode />}
           </IconButton>

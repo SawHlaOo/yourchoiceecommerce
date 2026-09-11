@@ -1,12 +1,14 @@
 import { Alert, Box, Button, CircularProgress, Container, Grid, Paper, Stack, TextField, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useTheme } from '@mui/material/styles';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { productApi } from '../api/productApi';
 import ProductCard from '../components/ProductCard';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
+import { useApp } from '../appContext';
 
-function CatalogSection({ title, type, items, isLoading, search, filter }) {
+function CatalogSection({ title, items, isLoading, search, filter, wishlistIds, onFavorite }) {
   const visibleItems = useMemo(() => {
     const term = search.trim().toLowerCase();
     return items.filter((item) => {
@@ -24,8 +26,8 @@ function CatalogSection({ title, type, items, isLoading, search, filter }) {
       ) : (
         <Grid container spacing={3} alignItems="stretch">
           {visibleItems.map((item) => (
-            <Grid item xs={12} sm={6} md={4} key={`${type}-${item.id}`} sx={{ display: 'flex' }}>
-              <ProductCard type={type} item={item} />
+            <Grid item xs={12} sm={6} md={4} key={item.id} sx={{ display: 'flex' }}>
+              <ProductCard item={item} isFavorite={wishlistIds.has(item.id)} onFavorite={onFavorite} />
             </Grid>
           ))}
           {!visibleItems.length ? <Grid item xs={12}><Alert severity="info">No {title.toLowerCase()} match your search.</Alert></Grid> : null}
@@ -40,13 +42,35 @@ export default function Home() {
   const [filter, setFilter] = useState('');
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+  const { user } = useApp();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const promotions = useFeatureFlag('promotions');
   const popular = useFeatureFlag('popular');
   const newArrivals = useFeatureFlag('new_arrivals');
-  const games = useQuery({ queryKey: ['games'], queryFn: productApi.listGames, select: (response) => response?.data ?? [] });
-  const apps = useQuery({ queryKey: ['apps'], queryFn: productApi.listApps, select: (response) => response?.data ?? [] });
-  const powerpoints = useQuery({ queryKey: ['powerpoints'], queryFn: productApi.listPowerpoints, select: (response) => response?.data ?? [] });
-  const error = games.error || apps.error || powerpoints.error;
+  const products = useQuery({ queryKey: ['products'], queryFn: () => productApi.listProducts(), select: (response) => response?.data ?? [] });
+  const wishlist = useQuery({ queryKey: ['wishlist'], queryFn: productApi.listWishlist, enabled: Boolean(user), select: (response) => response?.data ?? [] });
+  const wishlistMutation = useMutation({
+    mutationFn: ({ id, active }) => active ? productApi.removeFromWishlist(id) : productApi.addToWishlist(id),
+    onMutate: async ({ id, active }) => {
+      await queryClient.cancelQueries({ queryKey: ['wishlist'] });
+      const previousWishlist = queryClient.getQueryData(['wishlist']);
+      queryClient.setQueryData(['wishlist'], (current = { success: true, data: [] }) => ({
+        ...current,
+        data: active
+          ? (current.data || []).filter((entry) => (entry.productId || entry.product?.id) !== id)
+          : [...(current.data || []), { id: `pending-${id}`, productId: id }],
+      }));
+      return { previousWishlist };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousWishlist) queryClient.setQueryData(['wishlist'], context.previousWishlist);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['wishlist'] }),
+  });
+  const items = products.data || [];
+  const wishlistIds = new Set((wishlist.data || []).map((entry) => entry.productId || entry.product?.id));
+  const error = products.error || wishlistMutation.error;
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
@@ -65,9 +89,15 @@ export default function Home() {
       </Stack>
 
       {error ? <Alert severity="error" sx={{ mt: 3 }}>{error.message || 'Unable to load the catalog right now. Please try again shortly.'}</Alert> : null}
-      <CatalogSection title="Games" type="game" items={games.data || []} isLoading={games.isLoading} search={search} filter={filter} />
-      <CatalogSection title="Apps" type="app" items={apps.data || []} isLoading={apps.isLoading} search={search} filter={filter} />
-      <CatalogSection title="Presentation templates" type="powerpoint" items={powerpoints.data || []} isLoading={powerpoints.isLoading} search={search} filter={filter} />
+      <CatalogSection
+        title="Products"
+        items={items}
+        isLoading={products.isLoading}
+        search={search}
+        filter={filter}
+        wishlistIds={wishlistIds}
+        onFavorite={(item) => user ? wishlistMutation.mutate({ id: item.id, active: wishlistIds.has(item.id) }) : navigate('/register')}
+      />
     </Container>
   );
 }

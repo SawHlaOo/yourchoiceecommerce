@@ -4,8 +4,22 @@ import { productsController } from "../controllers/productsController.js";
 import { validateBody } from "../middlewares/validate.js";
 import { createProductSchema, editProductSchema } from "../lib/dtos_products.js";
 import { deprecatedHandler } from "../lib/compat.js";
+import { productCardsController } from "../controllers/productCardsController.js";
+import { requireAdmin } from "../middlewares/authorization.js";
+import { validateParams } from "../middlewares/validate.js";
+import { z } from "zod";
 
 export const router = express.Router();
+
+const productIdParams = z.object({ id: z.coerce.number().int().positive() });
+
+router.get("/products", productCardsController.list);
+router.get("/products/slug/:slug", productCardsController.getBySlug);
+router.get("/products/:id", validateParams(productIdParams), productCardsController.get);
+router.get("/admin/products", auth, requireAdmin, productCardsController.listAdmin);
+router.post("/products", auth, requireAdmin, validateBody(productCardsController.schemas.createProductCardSchema), productCardsController.create);
+router.patch("/products/:id", auth, requireAdmin, validateParams(productIdParams), validateBody(productCardsController.schemas.updateProductCardSchema), productCardsController.update);
+router.delete("/products/:id", auth, requireAdmin, validateParams(productIdParams), productCardsController.deactivate);
 
 router.get("/games", productsController.listGames);
 router.get("/games/:id", productsController.getGame);

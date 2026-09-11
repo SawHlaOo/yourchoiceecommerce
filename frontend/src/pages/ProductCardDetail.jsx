@@ -13,13 +13,14 @@ export default function ProductCardDetail() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['product', type, id],
     queryFn: () => {
+      if (!type) return productApi.getProduct(id);
       if (type === 'game') return productApi.getGame(id);
       if (type === 'app') return productApi.getApp(id);
       if (type === 'powerpoint') return productApi.getPowerpoint(id);
       throw new Error('Unknown product type');
     },
     select: (response) => response?.data ?? response ?? null,
-    enabled: Boolean(type) && Boolean(id),
+    enabled: Boolean(id),
   });
 
 
@@ -61,4 +62,3 @@ export default function ProductCardDetail() {
     </Container>
   );
 }
-

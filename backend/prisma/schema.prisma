@@ -19,6 +19,8 @@ model User{
   role Role @default(USER)
 
   payments Payment[]
+  cartItems CartItem[]
+  wishlistItems WishlistItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -137,32 +139,67 @@ model ProductCard{
   name String
   description String?
   thumbnail String
-  price String
+  price Decimal @db.Decimal(10, 2)
+  originalPrice Decimal? @db.Decimal(10, 2)
+  brand String?
+  category String?
+  slug String? @unique
+  stock Int @default(0)
   badge String?
   isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  gameId Int
-  game Game @relation(fields:[gameId],references:[id])
+  gameId Int?
+  game Game? @relation(fields:[gameId],references:[id])
 
-  appId Int
-  app App @relation(fields:[appId],references:[id])
+  appId Int?
+  app App? @relation(fields:[appId],references:[id])
 
-  powerpointId Int
-  powerpoint Powerpoint @relation(fields:[powerpointId],references:[id])
+  powerpointId Int?
+  powerpoint Powerpoint? @relation(fields:[powerpointId],references:[id])
 
   sectionId Int?
   section Section? @relation(fields:[sectionId], references:[id])
 
   orders Order[]
+  cartItems CartItem[]
+  wishlistItems WishlistItem[]
 
   @@index([createdAt])
   @@index([gameId])
   @@index([appId])
   @@index([powerpointId])
   @@index([sectionId])
+}
+
+model CartItem {
+  id Int @id @default(autoincrement())
+  quantity Int @default(1)
+  userId Int
+  productId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product ProductCard @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model WishlistItem {
+  id Int @id @default(autoincrement())
+  userId Int
+  productId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product ProductCard @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
 }
 
 model Order{

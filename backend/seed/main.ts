@@ -31,6 +31,29 @@ async function main() {
     await prisma.app.create({ data: { name: "Studio Planner", description: "Plan launches and content delivery with ease.", image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80", logo: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80", badge: "Popular" } });
   }
 
+  const games = await prisma.game.findMany({ orderBy: { id: "asc" } });
+  for (const game of games) {
+    const slug = `game-${game.id}`;
+    const existingCard = await prisma.productCard.findUnique({ where: { slug } });
+    if (!existingCard) {
+      await prisma.productCard.create({
+        data: {
+          name: game.name,
+          description: game.description,
+          thumbnail: game.image,
+          price: new Prisma.Decimal("59.00"),
+          originalPrice: new Prisma.Decimal("79.00"),
+          brand: "ShopInMgSaw",
+          category: "Games",
+          slug,
+          stock: 10,
+          badge: game.badge,
+          game: { connect: { id: game.id } },
+        },
+      });
+    }
+  }
+
   for (const flag of [
     { key: "promotions", enabled: true },
     { key: "new_homepage", enabled: true },

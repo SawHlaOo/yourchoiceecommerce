@@ -11,6 +11,7 @@ const Login = lazy(() => import('./pages/Login'));
 const ProductCardDetail = lazy(() => import('./pages/ProductCardDetail'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Register = lazy(() => import('./pages/Register'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
 
 function page(Component, key) {
   return (
@@ -34,11 +35,13 @@ const router = createBrowserRouter([
       { index: true, element: <HomeRoute /> },
       { path: 'login', element: page(Login) },
       { path: 'register', element: page(Register) },
+      { path: 'product-card/:id', element: page(ProductCardDetail) },
       { path: 'product/:type/:id', element: page(ProductCardDetail) },
       {
         element: <ProtectedRoute />,
         children: [
           { path: 'profile/:id', element: page(Profile) },
+          { path: 'wishlist', element: page(Wishlist) },
           {
             path: 'admin',
             element: <ProtectedRoute requiredRole="ADMIN" />,
