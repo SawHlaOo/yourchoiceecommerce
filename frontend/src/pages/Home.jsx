@@ -31,7 +31,7 @@ export default function Home() {
   const items = products.data || []; const wishlistIds = new Set((wishlist.data || []).map((entry) => entry.productId || entry.product?.id)); const error = products.error || wishlistMutation.error;
   return <div className="py-2 sm:py-4">
     <section className={`rounded-3xl border p-6 sm:p-10 ${mode === 'dark' ? 'bg-gradient-to-br from-blue-950 to-slate-900' : 'bg-gradient-to-br from-blue-50 to-violet-50'}`}>
-      <div className="max-w-2xl space-y-4"><h1 className="text-3xl font-black tracking-tight sm:text-5xl">hey! discover your needs</h1><p className="text-slate-600 dark:text-blue-100">We sell games, apps, and presentation templates based on trust and quality.</p>
+      <div className="max-w-2xl space-y-4"><h1 className="text-3xl font-black tracking-tight sm:text-5xl">Hello! Search for your needs and pick it up</h1><p className="text-slate-600 dark:text-blue-100">Great things begin with great choices</p>
         <label className="block"><span className="sr-only">Search here</span><input aria-label="Search here" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search here" className="w-full rounded-xl border bg-white/80 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900/80" /></label>
       </div>
     </section>
