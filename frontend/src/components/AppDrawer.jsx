@@ -1,67 +1,36 @@
-import { Divider, Drawer, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { FavoriteBorder, Home, Login, Logout, Person, PersonAdd, VerifiedUser } from '@mui/icons-material';
-import { useNavigate } from 'react-router';
-import { useApp } from '../appContext';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
 import { productApi } from '../api/productApi';
+import { useApp } from '../appContext';
+import { Icon } from './ui';
+
+function NavItem({ icon, children, onClick }) {
+  return <button type="button" onClick={onClick} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800"><Icon name={icon} size={19} /><span>{children}</span></button>;
+}
 
 export default function AppDrawer() {
   const { openDrawer, setOpenDrawer, user, setUser } = useApp();
   const navigate = useNavigate();
   const isAuthenticated = Boolean(user);
-  const isAdmin = user?.role === 'ADMIN';
   const wishlist = useQuery({ queryKey: ['wishlist'], queryFn: productApi.listWishlist, enabled: isAuthenticated, select: (response) => response?.data ?? [] });
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setOpenDrawer(false);
-    navigate('/');
-  };
+  const close = () => setOpenDrawer(false);
+  const go = (path, options) => { close(); navigate(path, options); };
+  const handleLogout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); setUser(null); go('/'); };
 
   return (
-    <Drawer open={Boolean(openDrawer)} onClose={() => setOpenDrawer(false)}>
-      <List sx={{ width: 260 }}>
-        <ListItemButton onClick={() => { setOpenDrawer(false); navigate('/', { state: { resetHome: true } }); }}>
-          <ListItemIcon><Home /></ListItemIcon>
-          <ListItemText primary="Home" />
-        </ListItemButton>
-        {isAuthenticated ? (
-          <ListItemButton onClick={() => { setOpenDrawer(false); navigate(`/profile/${user.id}`); }}>
-            <ListItemIcon><Person /></ListItemIcon>
-            <ListItemText primary="Profile" />
-          </ListItemButton>
-        ) : (
-          <ListItemButton onClick={() => { setOpenDrawer(false); navigate('/login'); }}>
-            <ListItemIcon><Login /></ListItemIcon>
-            <ListItemText primary="Login" />
-          </ListItemButton>
-        )}
-        {isAdmin ? (
-          <ListItemButton onClick={() => { setOpenDrawer(false); navigate('/admin'); }}>
-            <ListItemIcon><VerifiedUser /></ListItemIcon>
-            <ListItemText primary="Admin" />
-          </ListItemButton>
-        ) : null}
-        <ListItemButton onClick={() => { setOpenDrawer(false); navigate(isAuthenticated ? '/wishlist' : '/register'); }}>
-          <ListItemIcon><FavoriteBorder /></ListItemIcon>
-          <ListItemText primary={`Wishlist${isAuthenticated && wishlist.data?.length ? ` (${wishlist.data.length})` : ''}`} />
-        </ListItemButton>
-        {!isAuthenticated ? (
-          <ListItemButton onClick={() => { setOpenDrawer(false); navigate('/register'); }}>
-            <ListItemIcon><PersonAdd /></ListItemIcon>
-            <ListItemText primary="Register" />
-          </ListItemButton>
-        ) : null}
-        <Divider />
-        {isAuthenticated ? (
-          <ListItemButton onClick={handleLogout}>
-            <ListItemIcon><Logout /></ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItemButton>
-        ) : null}
-      </List>
-    </Drawer>
+    <>
+      {openDrawer ? <button type="button" aria-label="Close navigation" className="fixed inset-0 z-40 bg-slate-950/40" onClick={close} /> : null}
+      <aside aria-label="Navigation menu" className={`fixed inset-y-0 left-0 z-50 w-72 transform bg-white p-4 shadow-xl transition-transform dark:bg-slate-900 ${openDrawer ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="mb-6 flex items-center justify-between"><span className="text-lg font-bold">Menu</span><button type="button" onClick={close} aria-label="Close navigation" className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"><Icon name="close" /></button></div>
+        <nav className="space-y-1">
+          <NavItem icon="home" onClick={() => go('/', { state: { resetHome: true } })}>Home</NavItem>
+          {isAuthenticated ? <NavItem icon="user" onClick={() => go(`/profile/${user.id}`)}>Profile</NavItem> : <NavItem icon="login" onClick={() => go('/login')}>Login</NavItem>}
+          {user?.role === 'ADMIN' ? <NavItem icon="shield" onClick={() => go('/admin')}>Admin</NavItem> : null}
+          <NavItem icon="heart" onClick={() => go(isAuthenticated ? '/wishlist' : '/register')}>Wishlist{isAuthenticated && wishlist.data?.length ? ` (${wishlist.data.length})` : ''}</NavItem>
+          {!isAuthenticated ? <NavItem icon="userPlus" onClick={() => go('/register')}>Register</NavItem> : null}
+          {isAuthenticated ? <><div className="my-4 border-t" /><NavItem icon="logout" onClick={handleLogout}>Logout</NavItem></> : null}
+        </nav>
+      </aside>
+    </>
   );
 }

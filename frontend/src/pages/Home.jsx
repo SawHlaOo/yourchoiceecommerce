@@ -1,103 +1,42 @@
-import { Alert, Box, Button, CircularProgress, Container, Grid, Paper, Stack, TextField, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { useTheme } from '@mui/material/styles';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
+import { featureFlagApi } from '../api/featureFlagApi';
 import { productApi } from '../api/productApi';
-import ProductCard from '../components/ProductCard';
-import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useApp } from '../appContext';
+import ProductCard from '../components/ProductCard';
+import { Alert, Button, Spinner } from '../components/ui';
 
 function CatalogSection({ title, items, isLoading, search, filter, wishlistIds, onFavorite }) {
   const visibleItems = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return items.filter((item) => {
-      const matchesFilter = !filter || (filter === 'new_arrivals' ? ['new', 'new arrivals'].includes(item.badge?.toLowerCase()) : item.badge?.toLowerCase() === filter);
-      const matchesSearch = !term || item.name?.toLowerCase().includes(term);
-      return matchesFilter && matchesSearch;
-    });
+    const normalize = (value) => value?.toLowerCase().replace(/[_-]+/g, ' ').trim();
+    return items.filter((item) => (!filter || normalize(item.badge) === normalize(filter)) && (!term || item.name?.toLowerCase().includes(term)));
   }, [items, search, filter]);
-
-  return (
-    <Box component="section" sx={{ mt: 5 }}>
-      <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>{title}</Typography>
-      {isLoading ? (
-        <Box display="flex" justifyContent="center" py={4}><CircularProgress aria-label={`Loading ${title}`} /></Box>
-      ) : (
-        <Grid container spacing={3} alignItems="stretch">
-          {visibleItems.map((item) => (
-            <Grid item xs={12} sm={6} md={4} key={item.id} sx={{ display: 'flex' }}>
-              <ProductCard item={item} isFavorite={wishlistIds.has(item.id)} onFavorite={onFavorite} />
-            </Grid>
-          ))}
-          {!visibleItems.length ? <Grid item xs={12}><Alert severity="info">No {title.toLowerCase()} match your search.</Alert></Grid> : null}
-        </Grid>
-      )}
-    </Box>
-  );
+  return <section className="mt-10"><h2 className="mb-4 text-2xl font-bold">{title}</h2>{isLoading ? <div className="flex justify-center py-10"><Spinner label={`Loading ${title}`} /></div> : <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">{visibleItems.map((item) => <ProductCard key={item.id} item={item} isFavorite={wishlistIds.has(item.id)} onFavorite={onFavorite} />)}{!visibleItems.length ? <div className="sm:col-span-2 lg:col-span-3"><Alert>No {title.toLowerCase()} match your search.</Alert></div> : null}</div>}</section>;
 }
 
 export default function Home() {
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('');
-  const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
-  const { user } = useApp();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const promotions = useFeatureFlag('promotions');
-  const popular = useFeatureFlag('popular');
-  const newArrivals = useFeatureFlag('new_arrivals');
+  const [search, setSearch] = useState(''); const [filter, setFilter] = useState('');
+  const { mode, user } = useApp(); const navigate = useNavigate(); const queryClient = useQueryClient();
+  const featureFlags = useQuery({ queryKey: ['feature-flags'], queryFn: featureFlagApi.list, select: (response) => response?.data ?? [] });
   const products = useQuery({ queryKey: ['products'], queryFn: () => productApi.listProducts(), select: (response) => response?.data ?? [] });
   const wishlist = useQuery({ queryKey: ['wishlist'], queryFn: productApi.listWishlist, enabled: Boolean(user), select: (response) => response?.data ?? [] });
   const wishlistMutation = useMutation({
     mutationFn: ({ id, active }) => active ? productApi.removeFromWishlist(id) : productApi.addToWishlist(id),
-    onMutate: async ({ id, active }) => {
-      await queryClient.cancelQueries({ queryKey: ['wishlist'] });
-      const previousWishlist = queryClient.getQueryData(['wishlist']);
-      queryClient.setQueryData(['wishlist'], (current = { success: true, data: [] }) => ({
-        ...current,
-        data: active
-          ? (current.data || []).filter((entry) => (entry.productId || entry.product?.id) !== id)
-          : [...(current.data || []), { id: `pending-${id}`, productId: id }],
-      }));
-      return { previousWishlist };
-    },
-    onError: (_error, _variables, context) => {
-      if (context?.previousWishlist) queryClient.setQueryData(['wishlist'], context.previousWishlist);
-    },
+    onMutate: async ({ id, active }) => { await queryClient.cancelQueries({ queryKey: ['wishlist'] }); const previous = queryClient.getQueryData(['wishlist']); queryClient.setQueryData(['wishlist'], (current = { success: true, data: [] }) => ({ ...current, data: active ? (current.data || []).filter((entry) => (entry.productId || entry.product?.id) !== id) : [...(current.data || []), { id: `pending-${id}`, productId: id }] })); return { previous }; },
+    onError: (_error, _variables, context) => { if (context?.previous) queryClient.setQueryData(['wishlist'], context.previous); },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['wishlist'] }),
   });
-  const items = products.data || [];
-  const wishlistIds = new Set((wishlist.data || []).map((entry) => entry.productId || entry.product?.id));
-  const error = products.error || wishlistMutation.error;
-
-  return (
-    <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
-      <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, border: '1px solid', borderColor: 'divider', background: isDarkMode ? 'linear-gradient(135deg, #172554, #1e293b)' : 'linear-gradient(135deg, #eff6ff, #f5f3ff)', color: isDarkMode ? '#f8fafc' : 'text.primary' }}>
-        <Stack spacing={2} maxWidth={720}>
-          <Typography component="h1" variant="h3" fontWeight={800}>hey! discover your needs </Typography>
-          <Typography sx={{ color: isDarkMode ? '#dbeafe' : 'text.secondary' }}>We sell games, apps, and presentation templates based on trust and quality.</Typography>
-          <TextField label="Search here" value={search} onChange={(event) => setSearch(event.target.value)} fullWidth inputProps={{ 'aria-label': 'Search here' }} sx={isDarkMode ? { '& .MuiInputLabel-root': { color: '#dbeafe' }, '& .MuiInputLabel-root.Mui-focused': { color: '#93c5fd' }, '& .MuiOutlinedInput-root': { color: '#f8fafc', '& fieldset': { borderColor: 'rgba(219, 234, 254, 0.45)' }, '&:hover fieldset': { borderColor: '#bfdbfe' }, '&.Mui-focused fieldset': { borderColor: '#93c5fd' } } } : undefined} />
-        </Stack>
-      </Paper>
-
-      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 3 }}>
-        {promotions.data !== false ? <Button variant={filter === 'promotions' ? 'contained' : 'outlined'} onClick={() => setFilter(filter === 'promotions' ? '' : 'promotions')}>Promotions</Button> : null}
-        {popular.data !== false ? <Button variant={filter === 'popular' ? 'contained' : 'outlined'} onClick={() => setFilter(filter === 'popular' ? '' : 'popular')}>Popular</Button> : null}
-        {newArrivals.data !== false ? <Button variant={filter === 'new_arrivals' ? 'contained' : 'outlined'} onClick={() => setFilter(filter === 'new_arrivals' ? '' : 'new_arrivals')}>New arrivals</Button> : null}
-      </Stack>
-
-      {error ? <Alert severity="error" sx={{ mt: 3 }}>{error.message || 'Unable to load the catalog right now. Please try again shortly.'}</Alert> : null}
-      <CatalogSection
-        title="Products"
-        items={items}
-        isLoading={products.isLoading}
-        search={search}
-        filter={filter}
-        wishlistIds={wishlistIds}
-        onFavorite={(item) => user ? wishlistMutation.mutate({ id: item.id, active: wishlistIds.has(item.id) }) : navigate('/register')}
-      />
-    </Container>
-  );
+  const items = products.data || []; const wishlistIds = new Set((wishlist.data || []).map((entry) => entry.productId || entry.product?.id)); const error = products.error || wishlistMutation.error;
+  return <div className="py-2 sm:py-4">
+    <section className={`rounded-3xl border p-6 sm:p-10 ${mode === 'dark' ? 'bg-gradient-to-br from-blue-950 to-slate-900' : 'bg-gradient-to-br from-blue-50 to-violet-50'}`}>
+      <div className="max-w-2xl space-y-4"><h1 className="text-3xl font-black tracking-tight sm:text-5xl">hey! discover your needs</h1><p className="text-slate-600 dark:text-blue-100">We sell games, apps, and presentation templates based on trust and quality.</p>
+        <label className="block"><span className="sr-only">Search here</span><input aria-label="Search here" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search here" className="w-full rounded-xl border bg-white/80 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900/80" /></label>
+      </div>
+    </section>
+    <div className="mt-5 flex flex-wrap gap-2">{(featureFlags.data || []).filter((flag) => flag.enabled).map((flag) => <Button key={flag.key} variant={filter === flag.key ? 'primary' : 'outline'} onClick={() => setFilter(filter === flag.key ? '' : flag.key)}>{flag.key.replace(/[_-]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())}</Button>)}</div>
+    {error ? <Alert severity="error" className="mt-5">{error.message || 'Unable to load the catalog right now. Please try again shortly.'}</Alert> : null}
+    <CatalogSection title="Products" items={items} isLoading={products.isLoading} search={search} filter={filter} wishlistIds={wishlistIds} onFavorite={(item) => user ? wishlistMutation.mutate({ id: item.id, active: wishlistIds.has(item.id) }) : navigate('/register')} />
+  </div>;
 }

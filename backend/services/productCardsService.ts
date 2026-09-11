@@ -81,4 +81,7 @@ export const productCardsService = {
   async deactivate(id: number) {
     return toResponse(await productCardsRepository.deactivate(id));
   },
+  async delete(id: number) {
+    return toResponse(await productCardsRepository.delete(id));
+  },
 };

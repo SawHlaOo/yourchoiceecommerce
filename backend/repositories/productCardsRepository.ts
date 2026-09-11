@@ -30,4 +30,7 @@ export const productCardsRepository = {
   deactivate(id: number) {
     return prisma.productCard.update({ where: { id }, data: { isActive: false }, include });
   },
+  delete(id: number) {
+    return prisma.productCard.delete({ where: { id }, include });
+  },
 };

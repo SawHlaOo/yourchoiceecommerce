@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 
 export default function FeatureFlagGate({ flag, children, fallback = null }) {
@@ -6,5 +5,5 @@ export default function FeatureFlagGate({ flag, children, fallback = null }) {
   if (!enabled) {
     return fallback;
   }
-  return <Box>{children}</Box>;
+  return <div>{children}</div>;
 }

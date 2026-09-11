@@ -1,9 +1,3 @@
-import { Container, Typography } from '@mui/material';
-
 export default function View() {
-  return (
-    <Container sx={{ py: 4 }}>
-      <Typography variant="h5">View</Typography>
-    </Container>
-  );
+  return <div className="py-8"><h1 className="text-2xl font-bold">View</h1></div>;
 }

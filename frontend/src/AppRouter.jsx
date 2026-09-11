@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider, useLocation } from 'react-router';
 import { lazy, Suspense } from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { Spinner } from './components/ui';
 import App from './App';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -15,7 +15,7 @@ const Wishlist = lazy(() => import('./pages/Wishlist'));
 
 function page(Component, key) {
   return (
-    <Suspense fallback={<Box display="flex" justifyContent="center" py={8}><CircularProgress aria-label="Loading page" /></Box>}>
+    <Suspense fallback={<div className="flex justify-center py-16"><Spinner label="Loading page" /></div>}>
       <Component key={key} />
     </Suspense>
   );

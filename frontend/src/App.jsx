@@ -1,5 +1,4 @@
 import { Outlet } from 'react-router';
-import { Container } from '@mui/material';
 import Header from './components/Header';
 import AppDrawer from './components/AppDrawer';
 
@@ -8,9 +7,9 @@ export default function App() {
     <>
       <Header />
       <AppDrawer />
-      <Container maxWidth="xl" sx={{ py: 3 }}>
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Outlet />
-      </Container>
+      </main>
     </>
   );
 }

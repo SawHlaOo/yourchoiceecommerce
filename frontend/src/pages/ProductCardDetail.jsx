@@ -1,64 +1,15 @@
-import { useMemo, useState } from 'react';
-import { Alert, Box, Button, Card, CardContent, CardMedia, CircularProgress, Container, Stack, Typography, Chip } from '@mui/material';
-import { useParams, useNavigate } from 'react-router';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router';
 import { productApi } from '../api/productApi';
+import { Alert, Button, Card, Spinner } from '../components/ui';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80';
-
 export default function ProductCardDetail() {
-  const { type, id } = useParams();
-  const navigate = useNavigate();
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['product', type, id],
-    queryFn: () => {
-      if (!type) return productApi.getProduct(id);
-      if (type === 'game') return productApi.getGame(id);
-      if (type === 'app') return productApi.getApp(id);
-      if (type === 'powerpoint') return productApi.getPowerpoint(id);
-      throw new Error('Unknown product type');
-    },
-    select: (response) => response?.data ?? response ?? null,
-    enabled: Boolean(id),
-  });
-
-
-  const defaultImage = useMemo(() => data?.image || FALLBACK_IMAGE, [data?.image]);
-  const [failed, setFailed] = useState(false);
-  const imageSrc = failed ? FALLBACK_IMAGE : defaultImage;
-
-  if (isLoading) {
-    return <Box display="flex" justifyContent="center" py={8}><CircularProgress /></Box>;
-  }
-
-  if (error || !data) {
-    return <Container maxWidth="md" sx={{ py: 6 }}><Alert severity="error">{error?.message || 'Product not found'}</Alert></Container>;
-  }
-
-  return (
-    <Container maxWidth="md" sx={{ py: 6 }}>
-      <Card elevation={0} sx={{ borderRadius: 4 }}>
-        <CardMedia
-          component="img"
-          height="360"
-          image={imageSrc}
-          alt={data?.name}
-          onError={() => setFailed(true)}
-          sx={{ objectFit: 'cover' }}
-        />
-        <CardContent>
-          <Stack spacing={1}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h4" fontWeight={700}>{data?.name}</Typography>
-              <Chip label={data?.badge || 'Featured'} />
-            </Box>
-            <Button variant="outlined" size="small" onClick={() => navigate('/')}>Back to catalog</Button>
-            <Typography color="text.secondary">{data?.description || 'A detailed view of this product.'}</Typography>
-            <Typography variant="caption" color="text.secondary">{data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'Recently added'}</Typography>
-          </Stack>
-        </CardContent>
-      </Card>
-    </Container>
-  );
+  const { type, id } = useParams(); const navigate = useNavigate(); const [failed, setFailed] = useState(false);
+  const { data, isLoading, error } = useQuery({ queryKey: ['product', type, id], queryFn: () => { if (!type) return productApi.getProduct(id); if (type === 'game') return productApi.getGame(id); if (type === 'app') return productApi.getApp(id); if (type === 'powerpoint') return productApi.getPowerpoint(id); throw new Error('Unknown product type'); }, select: (response) => response?.data ?? response ?? null, enabled: Boolean(id) });
+  const image = failed ? FALLBACK_IMAGE : (data?.image || FALLBACK_IMAGE);
+  if (isLoading) return <div className="flex justify-center py-16"><Spinner /></div>;
+  if (error || !data) return <Alert severity="error">{error?.message || 'Product not found'}</Alert>;
+  return <div className="mx-auto max-w-3xl py-8"><Card className="overflow-hidden"><img className="h-72 w-full object-cover sm:h-96" src={image} alt={data.name} onError={() => setFailed(true)} /><div className="space-y-3 p-6"><div className="flex items-center justify-between gap-3"><h1 className="text-3xl font-bold">{data.name}</h1><span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-200">{data.badge || 'Featured'}</span></div><Button variant="outline" onClick={() => navigate('/')}>Back to catalog</Button><p className="text-slate-600 dark:text-slate-300">{data.description || 'A detailed view of this product.'}</p><p className="text-xs text-slate-500">{data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'Recently added'}</p></div></Card></div>;
 }

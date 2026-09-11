@@ -31,5 +31,11 @@ export const productCardsController = {
     if (!id) return res.status(400).json({ success: false, error: "Invalid product id" });
     return res.json({ success: true, data: await productCardsService.deactivate(id) });
   }) as RequestHandler,
+  delete: (async (req, res) => {
+    const id = idFrom(String(req.params.id));
+    if (!id) return res.status(400).json({ success: false, error: "Invalid product id" });
+    await productCardsService.delete(id);
+    return res.status(204).send();
+  }) as RequestHandler,
   schemas: { createProductCardSchema, updateProductCardSchema },
 };

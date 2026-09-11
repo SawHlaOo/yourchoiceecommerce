@@ -20,6 +20,7 @@ router.get("/admin/products", auth, requireAdmin, productCardsController.listAdm
 router.post("/products", auth, requireAdmin, validateBody(productCardsController.schemas.createProductCardSchema), productCardsController.create);
 router.patch("/products/:id", auth, requireAdmin, validateParams(productIdParams), validateBody(productCardsController.schemas.updateProductCardSchema), productCardsController.update);
 router.delete("/products/:id", auth, requireAdmin, validateParams(productIdParams), productCardsController.deactivate);
+router.delete("/products/:id/permanent", auth, requireAdmin, validateParams(productIdParams), productCardsController.delete);
 
 router.get("/games", productsController.listGames);
 router.get("/games/:id", productsController.getGame);

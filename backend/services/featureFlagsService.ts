@@ -15,7 +15,7 @@ export const featureFlagsService = {
     return featureFlagsRepository.findByKey(key);
   },
 
-  async createFlag(input: { key: string; enabled?: boolean; description?: string }) {
+  async createFlag(input: { key: string; enabled?: boolean }) {
     const { key, enabled } = input;
     const flag = await featureFlagsRepository.create({
       key,
