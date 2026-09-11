@@ -21,7 +21,7 @@ export default function ProductCard({ item, isFavorite = false, onFavorite }) {
         <p className="line-clamp-2 min-h-12 text-sm text-slate-600 dark:text-slate-300">{item?.description || 'Explore this item and see its details.'}</p>
         <div className="mt-auto flex items-center gap-2">
           <button type="button" aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => onFavorite?.(item)} className={`rounded-lg p-2 transition hover:bg-slate-100 dark:hover:bg-slate-800 ${isFavorite ? 'text-red-500' : ''}`}><Icon name={isFavorite ? 'heartFilled' : 'heart'} /></button>
-          <Button variant="outline" className="flex-1" onClick={() => window.open(TELEGRAM_URL, '_blank', 'noopener,noreferrer')}>Go Telegram to buy</Button>
+          <Button variant="telegram" className="flex-1" onClick={() => window.open(TELEGRAM_URL, '_blank', 'noopener,noreferrer')}>Go Telegram to buy</Button>
         </div>
       </div>
     </article>
