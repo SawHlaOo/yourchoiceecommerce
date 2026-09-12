@@ -14,7 +14,7 @@ export default function ProductCard({ item, isFavorite = false, onFavorite }) {
         <h2 className="line-clamp-2 text-sm font-bold text-slate-900 dark:text-white sm:text-lg">{title}</h2>
         {item?.brand ? <p className="hidden text-sm text-slate-500 dark:text-slate-400 sm:block">{item.brand}</p> : null}
         <div className="flex flex-wrap items-baseline gap-1.5">
-          <strong className="text-sm sm:text-lg">${Number(item?.price ?? 0).toFixed(2)}</strong>
+          <strong className="text-sm sm:text-lg">MMK{Number(item?.price ?? 0).toFixed(2)}</strong>
           {item?.originalPrice > item?.price ? <del className="text-[10px] text-slate-500 sm:text-sm">${Number(item.originalPrice).toFixed(2)}</del> : null}
           {item?.discount ? <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">-{item.discount}%</span> : null}
         </div>
