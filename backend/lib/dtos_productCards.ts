@@ -4,7 +4,7 @@ const money = z.number().finite().nonnegative();
 const productFields = {
   name: z.string().trim().min(1),
   description: z.string().trim().optional(),
-  image: z.string().trim().url(),
+  image: z.string().trim().refine((value) => /^https?:\/\//i.test(value) || /^data:image\/(png|jpeg|webp);base64,/i.test(value), "Image must be a valid URL or uploaded image"),
   price: money,
   originalPrice: money.optional(),
   brand: z.string().trim().min(1).optional(),

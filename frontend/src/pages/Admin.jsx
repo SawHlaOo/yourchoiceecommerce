@@ -10,6 +10,39 @@ const emptyCardDraft = { name: '', description: '', image: '', price: '', origin
 const labelForFlag = (key) => key.replace(/[_-]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 const optionalText = (value) => (typeof value === 'string' && value.trim() ? value.trim() : undefined);
 const productCardPayload = (draft) => ({ name: typeof draft.name === 'string' ? draft.name.trim() : '', image: typeof draft.image === 'string' ? draft.image.trim() : '', description: optionalText(draft.description), brand: optionalText(draft.brand), category: optionalText(draft.category), slug: optionalText(draft.slug), badge: optionalText(draft.badge), price: Number(draft.price), originalPrice: draft.originalPrice === '' ? undefined : Number(draft.originalPrice), stock: Number(draft.stock) });
+const resizeImage = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onerror = () => reject(new Error('Unable to read the selected image.'));
+  reader.onload = () => {
+    const image = new Image();
+    image.onerror = () => reject(new Error('The selected file is not a valid image.'));
+    image.onload = () => {
+      let scale = Math.min(1, 800 / Math.max(image.width, image.height));
+      let quality = 0.72;
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext('2d');
+        if (!context) {
+          reject(new Error('Unable to process the selected image.'));
+          return;
+        }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        if (dataUrl.length <= 700 * 1024) {
+          resolve(dataUrl);
+          return;
+        }
+        if (quality > 0.48) quality -= 0.06;
+        else scale *= 0.8;
+      }
+      reject(new Error('The selected image could not be compressed enough. Please choose a smaller image.'));
+    };
+    image.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
 
 function Toggle({ checked, disabled, onChange, label = 'Enabled' }) {
   return <label className="inline-flex cursor-pointer items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-blue-600" checked={checked} disabled={disabled} onChange={onChange} /><span>{label}</span></label>;
@@ -41,7 +74,7 @@ export default function Admin() {
     <section className="rounded-2xl border p-5"><h2 className="text-2xl font-bold">Debug / Admin user cleanup</h2><p className="my-2 text-sm text-slate-500">Enter a user ID to delete that account. This action is admin-only and useful for debugging.</p><div className="flex flex-col gap-3 sm:flex-row sm:items-end"><Field label="User ID" type="number" value={userDeleteId} onChange={(event) => setUserDeleteId(event.target.value)} className="sm:w-52" /><Button variant="danger" disabled={!userDeleteId || deleteUserMutation.isPending} onClick={() => deleteUserMutation.mutate(Number(userDeleteId))}>Delete user</Button></div></section>
     <Modal open={open} onClose={() => setOpen(false)} title="Create feature flag" actions={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button disabled={!draft.key.trim() || createMutation.isPending} onClick={() => createMutation.mutate({ key: draft.key.trim().toLowerCase(), enabled: draft.enabled })}>Save</Button></>}><div className="space-y-4"><Field label="Flag key" placeholder="flash_sale" value={draft.key} onChange={(event) => setDraft({ ...draft, key: event.target.value.toLowerCase() })} /><Toggle checked={draft.enabled} onChange={() => setDraft({ ...draft, enabled: !draft.enabled })} /></div></Modal>
     <Modal open={openProductCard} onClose={closeProductModal} title={selectedProductCard ? 'Edit product card' : 'Create product card'} actions={<><Button variant="ghost" onClick={closeProductModal}>Cancel</Button><Button disabled={!productCardDraft.name || !productCardDraft.image || productCardDraft.price === '' || productCardDraft.stock === ''} onClick={() => productCardMutation.mutate({ id: selectedProductCard, payload: productCardPayload(productCardDraft) })}>Save</Button></>}>
-      <div className="space-y-3">{[['name', 'Name'], ['image', 'Image URL'], ['brand', 'Brand'], ['category', 'Category'], ['slug', 'Slug'], ['price', 'Price'], ['originalPrice', 'Original price'], ['stock', 'Stock']].map(([field, label]) => <Field key={field} label={label} type={['price', 'originalPrice', 'stock'].includes(field) ? 'number' : 'text'} value={productCardDraft[field]} onChange={(event) => setProductCardDraft({ ...productCardDraft, [field]: event.target.value })} />)}<label className="block text-sm font-medium">Description<textarea className="mt-1 block w-full rounded-lg border bg-white px-3 py-2.5 dark:bg-slate-900" rows="3" value={productCardDraft.description} onChange={(event) => setProductCardDraft({ ...productCardDraft, description: event.target.value })} /></label><label className="block text-sm font-medium">Product category<select className="mt-1 block w-full rounded-lg border bg-white px-3 py-2.5 dark:bg-slate-900" value={productCardDraft.badge} onChange={(event) => setProductCardDraft({ ...productCardDraft, badge: event.target.value })}>{productCategoryOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><Toggle checked={Boolean(productCardDraft.isActive)} onChange={(event) => setProductCardDraft({ ...productCardDraft, isActive: event.target.checked })} label="Active" /></div>
+      <div className="space-y-3">{[['name', 'Name'], ['brand', 'Brand'], ['category', 'Category'], ['slug', 'Slug'], ['price', 'Price'], ['originalPrice', 'Original price'], ['stock', 'Stock']].map(([field, label]) => <Field key={field} label={label} type={['price', 'originalPrice', 'stock'].includes(field) ? 'number' : 'text'} value={productCardDraft[field]} onChange={(event) => setProductCardDraft({ ...productCardDraft, [field]: event.target.value })} />)}<div><Field label="Image URL (optional)" placeholder="https://..." value={productCardDraft.image.startsWith('data:') ? '' : productCardDraft.image} onChange={(event) => setProductCardDraft({ ...productCardDraft, image: event.target.value })} /><label className="mt-2 flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-blue-300 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-200"><input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={async (event) => { const file = event.target.files?.[0]; if (!file) return; if (file.size > 8 * 1024 * 1024) { window.alert('Please choose an image smaller than 8 MB.'); return; } try { const image = await resizeImage(file); setProductCardDraft({ ...productCardDraft, image }); } catch (error) { window.alert(error.message); } }} /><span>{productCardDraft.image.startsWith('data:') ? 'Image selected - choose another' : 'Upload image from device'}</span></label>{productCardDraft.image ? <img className="mt-3 h-36 w-full rounded-lg object-cover" src={productCardDraft.image} alt="Product preview" /> : null}</div><label className="block text-sm font-medium">Description<textarea className="mt-1 block w-full rounded-lg border bg-white px-3 py-2.5 dark:bg-slate-900" rows="3" value={productCardDraft.description} onChange={(event) => setProductCardDraft({ ...productCardDraft, description: event.target.value })} /></label><label className="block text-sm font-medium">Product category<select className="mt-1 block w-full rounded-lg border bg-white px-3 py-2.5 dark:bg-slate-900" value={productCardDraft.badge} onChange={(event) => setProductCardDraft({ ...productCardDraft, badge: event.target.value })}>{productCategoryOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><Toggle checked={Boolean(productCardDraft.isActive)} onChange={(event) => setProductCardDraft({ ...productCardDraft, isActive: event.target.checked })} label="Active" /></div>
     </Modal>
   </div>;
 }
