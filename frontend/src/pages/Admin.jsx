@@ -9,7 +9,7 @@ const PRODUCT_BADGES = [{ value: '', label: 'No category' }, { value: 'Popular',
 const emptyCardDraft = { name: '', description: '', image: '', price: '', originalPrice: '', brand: '', category: '', slug: '', badge: '', stock: 0, isActive: true };
 const labelForFlag = (key) => key.replace(/[_-]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 const optionalText = (value) => (typeof value === 'string' && value.trim() ? value.trim() : undefined);
-const productCardPayload = (draft) => ({ name: typeof draft.name === 'string' ? draft.name.trim() : '', image: typeof draft.image === 'string' ? draft.image.trim() : '', description: optionalText(draft.description), brand: optionalText(draft.brand), category: optionalText(draft.category), slug: optionalText(draft.slug), badge: optionalText(draft.badge), price: Number(draft.price), originalPrice: draft.originalPrice === '' ? undefined : Number(draft.originalPrice), stock: Number(draft.stock) });
+const productCardPayload = (draft) => ({ name: typeof draft.name === 'string' ? draft.name.trim() : '', image: typeof draft.image === 'string' ? draft.image.trim() : '', description: optionalText(draft.description), brand: optionalText(draft.brand), category: optionalText(draft.category), slug: optionalText(draft.slug), badge: optionalText(draft.badge), price: Number(draft.price), originalPrice: draft.originalPrice === '' ? undefined : Number(draft.originalPrice), stock: Number(draft.stock), isActive: Boolean(draft.isActive) });
 const resizeImage = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onerror = () => reject(new Error('Unable to read the selected image.'));
