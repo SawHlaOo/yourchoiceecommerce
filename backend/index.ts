@@ -828,6 +828,7 @@ const configuredOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL
 const allowedOrigins = [
   "http://localhost:5173",
   "https://ecommerce-y4lw.vercel.app",
+  "https://yourchiceecommerce.vercel.app",
   ...configuredOrigins,
 ];
 

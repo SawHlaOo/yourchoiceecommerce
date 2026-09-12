@@ -11,7 +11,7 @@ async function request(path, { method = 'GET', body, headers = {}, auth = true }
   const options = {
     method,
     headers: {
-      'Content-Type': 'application/json',
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       ...(auth && token ? { Authorization: 'Bearer ' + token } : {}),
       ...headers,
     },
@@ -60,4 +60,3 @@ async function request(path, { method = 'GET', body, headers = {}, auth = true }
 }
 
 export const api = { request };
-
