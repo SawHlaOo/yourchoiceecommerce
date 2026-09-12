@@ -6,6 +6,10 @@ const TELEGRAM_URL = import.meta.env.VITE_TELEGRAM_URL?.trim() || 'https://t.me/
 export default function ProductCard({ item, isFavorite = false, onFavorite }) {
   const image = item?.image || item?.logo || FALLBACK_IMAGE;
   const title = item?.name || 'Untitled product';
+  const stock = Number(item?.stock ?? 0);
+  const hasStock = stock > 0;
+  const lowStock = hasStock && stock <= 5;
+
   return (
     <article className="flex h-full w-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg active:scale-[.98] dark:border-slate-700 dark:bg-slate-900">
       <img className="h-32 w-full object-cover sm:h-64" loading="lazy" src={image} alt={title} />
@@ -18,6 +22,9 @@ export default function ProductCard({ item, isFavorite = false, onFavorite }) {
           {item?.originalPrice > item?.price ? <del className="text-[10px] text-slate-500 sm:text-sm">${Number(item.originalPrice).toFixed(2)}</del> : null}
           {item?.discount ? <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">-{item.discount}%</span> : null}
         </div>
+        <span className={`inline-flex w-fit items-center rounded-full px-2 py-1 text-[10px] font-semibold sm:text-xs ${hasStock ? (lowStock ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-200' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200') : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-200'}`}>
+          {hasStock ? (lowStock ? `Only ${stock} left` : `In stock: ${stock}`) : 'Out of stock'}
+        </span>
         <p className="hidden min-h-12 text-sm text-slate-600 dark:text-slate-300 sm:line-clamp-2 sm:block">{item?.description || 'Explore this item and see its details.'}</p>
         <div className="mt-auto flex items-center gap-1.5 sm:gap-2">
           <button type="button" aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => onFavorite?.(item)} className={`rounded-lg p-1.5 transition hover:bg-slate-100 active:scale-90 dark:hover:bg-slate-800 ${isFavorite ? 'text-red-500' : ''}`}><Icon name={isFavorite ? 'heartFilled' : 'heart'} size={18} /></button>
