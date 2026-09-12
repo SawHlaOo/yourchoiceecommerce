@@ -25,6 +25,15 @@ function toResponse(product: Awaited<ReturnType<typeof productCardsRepository.fi
   return { ...product, image: product.thumbnail, price, originalPrice, discount };
 }
 
+function toSummaryResponse(product: Awaited<ReturnType<typeof productCardsRepository.listSummary>>[number]) {
+  const price = Number(product.price);
+  const originalPrice = product.originalPrice === null ? null : Number(product.originalPrice);
+  const discount = originalPrice && originalPrice > price
+    ? Math.round(((originalPrice - price) / originalPrice) * 100)
+    : 0;
+  return { ...product, price, originalPrice, discount };
+}
+
 function toCreateData(input: ProductInput): Prisma.ProductCardCreateInput {
   return {
     name: input.name,
@@ -65,6 +74,10 @@ export const productCardsService = {
   async listAdmin() {
     const products = await productCardsRepository.list();
     return products.map(toResponse);
+  },
+  async listAdminSummary() {
+    const products = await productCardsRepository.listSummary();
+    return products.map(toSummaryResponse);
   },
   async get(id: number) {
     return toResponse(await productCardsRepository.findById(id));

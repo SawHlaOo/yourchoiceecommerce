@@ -10,9 +10,14 @@ const databaseUrl = configuredDatabaseUrl || "postgresql://unconfigured:unconfig
 
 export const isDatabaseConfigured = Boolean(configuredDatabaseUrl);
 
+const configuredPoolMax = Number.parseInt(process.env.DATABASE_POOL_MAX ?? "10", 10);
+const poolMax = Number.isInteger(configuredPoolMax) && configuredPoolMax > 0
+  ? Math.min(configuredPoolMax, 50)
+  : 10;
+
 const adapter = new PrismaPg({
   connectionString: databaseUrl,
-  max: 1,
+  max: poolMax,
   connectionTimeoutMillis: 5_000,
 });
 

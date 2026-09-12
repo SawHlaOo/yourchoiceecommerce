@@ -4,7 +4,9 @@ const builtInFlags = ["promotions", "popular", "new_arrivals"];
 
 export const featureFlagsService = {
   async listFlags() {
-    await Promise.all(builtInFlags.map((key) => featureFlagsRepository.ensureEnabled(key)));
+    // Seed missing built-ins in one database round trip instead of issuing
+    // one upsert per flag on every public list request.
+    await featureFlagsRepository.ensureEnabledMany(builtInFlags);
     return featureFlagsRepository.findAll();
   },
 

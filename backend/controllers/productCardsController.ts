@@ -9,7 +9,13 @@ const idFrom = (value: string) => {
 
 export const productCardsController = {
   list: (async (req, res) => res.json({ success: true, data: await productCardsService.list(typeof req.query.category === "string" ? req.query.category : undefined) })) as RequestHandler,
-  listAdmin: (async (_req, res) => res.json({ success: true, data: await productCardsService.listAdmin() })) as RequestHandler,
+  listAdmin: (async (req, res) => {
+    const summary = req.query.summary === "true" || req.query.summary === "1";
+    const products = summary
+      ? await productCardsService.listAdminSummary()
+      : await productCardsService.listAdmin();
+    return res.json({ success: true, data: products });
+  }) as RequestHandler,
   get: (async (req, res) => {
     const id = idFrom(String(req.params.id));
     if (!id) return res.status(400).json({ success: false, error: "Invalid product id" });

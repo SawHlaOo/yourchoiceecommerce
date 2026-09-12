@@ -4,7 +4,7 @@ export const productApi = {
   listProducts: (category) => api.request(`/products${category ? `?category=${encodeURIComponent(category)}` : ''}`),
   getProduct: (id) => api.request(`/products/${id}`),
   getProductBySlug: (slug) => api.request(`/products/slug/${encodeURIComponent(slug)}`),
-  listAdminProducts: () => api.request('/admin/products'),
+  listAdminProducts: () => api.request('/admin/products?summary=true'),
   createProduct: (payload) => api.request('/products', { method: 'POST', body: payload }),
   updateProduct: (id, payload) => api.request(`/products/${id}`, { method: 'PATCH', body: payload }),
   deactivateProduct: (id) => api.request(`/products/${id}`, { method: 'DELETE' }),

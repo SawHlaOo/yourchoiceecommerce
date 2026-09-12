@@ -4,6 +4,23 @@ const include = {
   section: true,
 } satisfies Prisma.ProductCardInclude;
 
+const summarySelect = {
+  id: true,
+  name: true,
+  description: true,
+  price: true,
+  originalPrice: true,
+  brand: true,
+  category: true,
+  slug: true,
+  stock: true,
+  badge: true,
+  isActive: true,
+  createdAt: true,
+  updatedAt: true,
+  section: true,
+} satisfies Prisma.ProductCardSelect;
+
 export const productCardsRepository = {
   list(filters?: { category?: string; activeOnly?: boolean }) {
     return prisma.productCard.findMany({
@@ -13,6 +30,12 @@ export const productCardsRepository = {
       },
       orderBy: { createdAt: "desc" },
       include,
+    });
+  },
+  listSummary() {
+    return prisma.productCard.findMany({
+      orderBy: { createdAt: "desc" },
+      select: summarySelect,
     });
   },
   findById(id: number) {
