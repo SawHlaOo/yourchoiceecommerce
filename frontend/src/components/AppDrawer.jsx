@@ -15,6 +15,13 @@ export default function AppDrawer() {
   const wishlist = useQuery({ queryKey: ['wishlist'], queryFn: productApi.listWishlist, enabled: isAuthenticated, select: (response) => response?.data ?? [] });
   const close = () => setOpenDrawer(false);
   const go = (path, options) => { close(); navigate(path, options); };
+  const openWishlist = () => {
+    if (isAuthenticated) {
+      go('/wishlist');
+    } else {
+      go('/wishlist-access');
+    }
+  };
   const handleLogout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); setUser(null); go('/'); };
 
   return (
@@ -24,10 +31,10 @@ export default function AppDrawer() {
         <div className="mb-6 flex items-center justify-between"><span className="text-lg font-bold">Menu</span><button type="button" onClick={close} aria-label="Close navigation" className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"><Icon name="close" /></button></div>
         <nav className="space-y-1">
           <NavItem icon="home" onClick={() => go('/', { state: { resetHome: true } })}>Home</NavItem>
-          {isAuthenticated ? <NavItem icon="user" onClick={() => go(`/profile/${user.id}`)}>Profile</NavItem> : <NavItem icon="login" onClick={() => go('/login')}>Login</NavItem>}
+          {isAuthenticated ? <NavItem icon="user" onClick={() => go(`/profile/${user.id}`)}>Profile</NavItem> : <NavItem icon="login" onClick={() => go('/login')}>Sign in</NavItem>}
           {user?.role === 'ADMIN' ? <NavItem icon="shield" onClick={() => go('/admin')}>Admin</NavItem> : null}
-          <NavItem icon="heart" onClick={() => go(isAuthenticated ? '/wishlist' : '/register')}>Wishlist{isAuthenticated && wishlist.data?.length ? ` (${wishlist.data.length})` : ''}</NavItem>
-          {!isAuthenticated ? <NavItem icon="userPlus" onClick={() => go('/register')}>Register</NavItem> : null}
+          <NavItem icon="heart" onClick={openWishlist}>Wishlist{isAuthenticated && wishlist.data?.length ? ` (${wishlist.data.length})` : ''}</NavItem>
+          {!isAuthenticated ? <NavItem icon="userPlus" onClick={() => go('/register')}>Sign up</NavItem> : null}
           {isAuthenticated ? <><div className="my-4 border-t" /><NavItem icon="logout" onClick={handleLogout}>Logout</NavItem></> : null}
         </nav>
       </aside>
