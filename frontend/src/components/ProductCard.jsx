@@ -34,10 +34,10 @@ export default function ProductCard({ item, isFavorite = false, onFavorite }) {
           {hasStock ? (lowStock ? `Only ${stock} left` : `In stock: ${stock}`) : 'Out of stock'}
         </span>
         <p className="hidden min-h-12 text-sm text-slate-600 dark:text-slate-300 sm:line-clamp-2 sm:block">{item?.description || 'Explore this item and see its details.'}</p>
-        <div className="mt-auto flex items-center gap-1.5 sm:gap-2">
-          <button type="button" aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => onFavorite?.(item)} className={`rounded-lg p-1.5 transition hover:bg-slate-100 active:scale-90 dark:hover:bg-slate-800 ${isFavorite ? 'text-red-500' : ''}`}><Icon name={isFavorite ? 'heartFilled' : 'heart'} size={18} /></button>
+        <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-1.5">
+          <button type="button" aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => onFavorite?.(item)} className={`self-start rounded-lg p-1.5 transition hover:bg-slate-100 active:scale-90 dark:hover:bg-slate-800 ${isFavorite ? 'text-red-500' : ''}`}><Icon name={isFavorite ? 'heartFilled' : 'heart'} size={18} /></button>
           <Button variant="outline" className="min-w-0 flex-1 whitespace-nowrap px-2 py-2 text-[10px] sm:px-3 sm:py-2 sm:text-sm" onClick={() => navigate(`/products/${encodeURIComponent(item?.slug || slugify(item?.name) || item?.id)}`)}>View Details</Button>
-          <Button variant="telegram" className="min-w-0 flex-1 whitespace-nowrap px-2 py-2 text-[10px] sm:px-4 sm:py-2 sm:text-sm" onClick={() => window.open(TELEGRAM_URL, '_blank', 'noopener,noreferrer')}> buy in Telegram </Button>
+          <Button variant="telegram" className="min-w-0 flex-1 whitespace-nowrap px-2 py-2 text-[10px] sm:px-4 sm:py-2 sm:text-sm" onClick={() => window.open(TELEGRAM_URL, '_blank', 'noopener,noreferrer')}>Buy on Telegram</Button>
         </div>
       </div>
     </article>
