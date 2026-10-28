@@ -11,7 +11,7 @@ import { z } from "zod";
 
 export const router = express.Router();
 
-const productIdParams = z.object({ id: z.coerce.number().int().positive() });
+const productIdParams = z.object({ id: z.string().min(1) });
 
 router.get("/products", productCardsController.list);
 router.get("/products/slug/:slug", productCardsController.getBySlug);

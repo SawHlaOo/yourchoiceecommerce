@@ -4,6 +4,12 @@ import { Button, Icon } from './ui';
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80';
 const TELEGRAM_URL = import.meta.env.VITE_TELEGRAM_URL?.trim() || 'https://t.me/';
 
+const slugify = (value) => String(value ?? '')
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '') || 'product';
+
 export default function ProductCard({ item, isFavorite = false, onFavorite }) {
   const navigate = useNavigate();
   const image = item?.image || item?.logo || FALLBACK_IMAGE;
@@ -30,7 +36,7 @@ export default function ProductCard({ item, isFavorite = false, onFavorite }) {
         <p className="hidden min-h-12 text-sm text-slate-600 dark:text-slate-300 sm:line-clamp-2 sm:block">{item?.description || 'Explore this item and see its details.'}</p>
         <div className="mt-auto flex items-center gap-1.5 sm:gap-2">
           <button type="button" aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => onFavorite?.(item)} className={`rounded-lg p-1.5 transition hover:bg-slate-100 active:scale-90 dark:hover:bg-slate-800 ${isFavorite ? 'text-red-500' : ''}`}><Icon name={isFavorite ? 'heartFilled' : 'heart'} size={18} /></button>
-          <Button variant="outline" className="min-w-0 flex-1 whitespace-nowrap px-2 py-2 text-[10px] sm:px-3 sm:py-2 sm:text-sm" onClick={() => navigate(`/products/${item?.id}`)}>View Details</Button>
+          <Button variant="outline" className="min-w-0 flex-1 whitespace-nowrap px-2 py-2 text-[10px] sm:px-3 sm:py-2 sm:text-sm" onClick={() => navigate(`/products/${encodeURIComponent(item?.slug || slugify(item?.name) || item?.id)}`)}>View Details</Button>
           <Button variant="telegram" className="min-w-0 flex-1 whitespace-nowrap px-2 py-2 text-[10px] sm:px-4 sm:py-2 sm:text-sm" onClick={() => window.open(TELEGRAM_URL, '_blank', 'noopener,noreferrer')}> buy in Telegram </Button>
         </div>
       </div>

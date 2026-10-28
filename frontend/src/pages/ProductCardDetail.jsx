@@ -7,21 +7,22 @@ import { Alert, Button, Card, Spinner } from '../components/ui';
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80';
 
 export default function ProductCardDetail() {
-  const { type, id } = useParams();
+  const { type, id, slug } = useParams();
   const navigate = useNavigate();
   const [failed, setFailed] = useState(false);
+  const identifier = decodeURIComponent((slug || id || '').trim());
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['product', type, id],
+    queryKey: ['product', type, identifier],
     queryFn: () => {
-      if (!type) return productApi.getProduct(id);
+      if (!type) return productApi.getProduct(identifier);
       if (type === 'game') return productApi.getGame(id);
       if (type === 'app') return productApi.getApp(id);
       if (type === 'powerpoint') return productApi.getPowerpoint(id);
       throw new Error('Unknown product type');
     },
     select: (response) => response?.data ?? response ?? null,
-    enabled: Boolean(id),
+    enabled: Boolean(identifier),
   });
 
   const image = failed ? FALLBACK_IMAGE : (data?.image || data?.thumbnail || data?.logo || FALLBACK_IMAGE);

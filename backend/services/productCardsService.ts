@@ -15,6 +15,28 @@ type ProductInput = {
   isActive?: boolean;
 };
 
+const slugify = (value: string) => value
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "")
+  .slice(0, 80) || "product";
+
+async function ensureUniqueSlug(inputSlug: string | undefined, name: string, currentId?: number) {
+  const baseSlug = (inputSlug && inputSlug.trim()) || slugify(name);
+  let candidate = baseSlug;
+  let counter = 1;
+
+  while (true) {
+    const existing = await productCardsRepository.findBySlug(candidate);
+    if (!existing || (currentId && existing.id === currentId)) {
+      return candidate;
+    }
+    candidate = `${baseSlug}-${counter}`;
+    counter += 1;
+  }
+}
+
 function toResponse(product: Awaited<ReturnType<typeof productCardsRepository.findById>>) {
   if (!product) return product;
   const price = Number(product.price);
@@ -86,10 +108,13 @@ export const productCardsService = {
     return toResponse(await productCardsRepository.findBySlug(slug));
   },
   async create(input: ProductInput) {
-    return toResponse(await productCardsRepository.create(toCreateData(input)));
+    const slug = await ensureUniqueSlug(input.slug, input.name);
+    return toResponse(await productCardsRepository.create(toCreateData({ ...input, slug })));
   },
   async update(id: number, input: Partial<ProductInput>) {
-    return toResponse(await productCardsRepository.update(id, toUpdateData(input)));
+    const nextSlug = input.slug ?? input.name;
+    const slug = nextSlug ? await ensureUniqueSlug(nextSlug, input.name ?? "", id) : undefined;
+    return toResponse(await productCardsRepository.update(id, toUpdateData({ ...input, ...(slug ? { slug } : {}) })));
   },
   async deactivate(id: number) {
     return toResponse(await productCardsRepository.deactivate(id));

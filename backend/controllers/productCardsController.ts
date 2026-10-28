@@ -7,6 +7,19 @@ const idFrom = (value: string) => {
   return Number.isInteger(id) && id > 0 ? id : null;
 };
 
+const lookupProduct = async (value: string) => {
+  const identifier = value.trim();
+  if (!identifier) return null;
+
+  const id = idFrom(identifier);
+  if (id !== null) {
+    return { kind: "id" as const, value: id, product: await productCardsService.get(id) };
+  }
+
+  const product = await productCardsService.getBySlug(identifier);
+  return product ? { kind: "slug" as const, value: identifier, product } : null;
+};
+
 export const productCardsController = {
   list: (async (req, res) => res.json({ success: true, data: await productCardsService.list(typeof req.query.category === "string" ? req.query.category : undefined) })) as RequestHandler,
   listAdmin: (async (req, res) => {
@@ -17,10 +30,11 @@ export const productCardsController = {
     return res.json({ success: true, data: products });
   }) as RequestHandler,
   get: (async (req, res) => {
-    const id = idFrom(String(req.params.id));
-    if (!id) return res.status(400).json({ success: false, error: "Invalid product id" });
-    const product = await productCardsService.get(id);
-    return product ? res.json({ success: true, data: product }) : res.status(404).json({ success: false, error: "Product not found" });
+    const lookup = await lookupProduct(String(req.params.id));
+    if (!lookup?.product) {
+      return res.status(404).json({ success: false, error: "Product not found" });
+    }
+    return res.json({ success: true, data: lookup.product });
   }) as RequestHandler,
   getBySlug: (async (req, res) => {
     const product = await productCardsService.getBySlug(String(req.params.slug));
