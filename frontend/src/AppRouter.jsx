@@ -37,6 +37,7 @@ const router = createBrowserRouter([
       { path: 'login', element: page(Login) },
       { path: 'register', element: page(Register) },
       { path: 'wishlist-access', element: page(WishlistAccess) },
+      { path: 'products/:id', element: page(ProductCardDetail) },
       { path: 'product-card/:id', element: page(ProductCardDetail) },
       { path: 'product/:type/:id', element: page(ProductCardDetail) },
       {
