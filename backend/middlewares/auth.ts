@@ -1,28 +1,33 @@
 import express from "express";
-import jwt from "jsonwebtoken";
+import { verifyJwt } from "../lib/jwt.js";
 
+export function auth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const authorization = req.headers.authorization;
 
+  if (typeof authorization !== "string") {
+    return res.status(401).json({ success: false, error: "Missing bearer token" });
+  }
 
-export function auth(
-    req:express.Request,
-    res:express.Response,
-    next:express.NextFunction
-)
-{
-    const authorization = req.headers.authorization;
-    const token = authorization?.split(" ")[1];
+  const match = /^Bearer\s+(.+)$/i.exec(authorization.trim());
+  if (!match) {
+    return res.status(401).json({ success: false, error: "Invalid authorization header" });
+  }
 
-    if (token) {
-        try {
-            const data = jwt.verify(token, 
-                process.env.JWT_SECRET as string);
+  const token = match[1].trim();
+  if (!token) {
+    return res.status(401).json({ success: false, error: "Missing bearer token" });
+  }
 
-            res.locals.user = data;
-            return next();
-            
-        } catch (e) {
-            return res.status(403).json({ msg: "Invalid token" });
-        }
+  try {
+    const payload = verifyJwt(token);
+
+    if (typeof payload !== "object" || payload === null || !("id" in payload)) {
+      return res.status(401).json({ success: false, error: "Invalid token payload" });
     }
-    res.status(403).json({msg:"missing token"});
+
+    res.locals.user = payload;
+    return next();
+  } catch (_error) {
+    return res.status(401).json({ success: false, error: "Invalid or expired token" });
+  }
 }

@@ -15,7 +15,8 @@
         "db:push": "prisma db push --schema prisma/schema.prisma",
         "db:seed": "tsx seed/main.ts",
         "admin:bootstrap": "tsx scripts/bootstrapAdmin.ts",
-        "generate": "prisma generate --schema prisma/schema.prisma"
+        "generate": "prisma generate --schema prisma/schema.prisma",
+        "test": "tsx --test tests/**/*.test.ts"
     },
     "dependencies": {
         "@prisma/adapter-pg": "^7.9.1",
