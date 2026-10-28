@@ -20,7 +20,9 @@ export default function ProductCard({ item, isFavorite = false, onFavorite }) {
 
   return (
     <article className="flex h-full w-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg active:scale-[.98] dark:border-slate-700 dark:bg-slate-900">
-      <img className="h-32 w-full object-cover sm:h-64" loading="lazy" src={image} alt={title} />
+      <div className="bg-slate-100 p-2 dark:bg-slate-800/80 sm:p-3">
+        <img className="h-40 w-full rounded-xl object-contain sm:h-64" loading="lazy" src={image} alt={title} />
+      </div>
       <div className="flex flex-1 flex-col gap-2 p-3 sm:gap-3 sm:p-5">
         {item?.badge ? <span className="w-fit rounded-full bg-blue-100 px-2 py-1 text-[10px] font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-200 sm:px-2.5 sm:text-xs">{item.badge}</span> : null}
         <h2 className="line-clamp-2 text-sm font-bold text-slate-900 dark:text-white sm:text-lg">{title}</h2>

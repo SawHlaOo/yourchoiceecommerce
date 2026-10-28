@@ -53,8 +53,8 @@ export default function ProductCardDetail() {
     <div className="mx-auto max-w-5xl py-8">
       <Card className="overflow-hidden">
         <div className="grid gap-0 md:grid-cols-2">
-          <div className="bg-slate-100 dark:bg-slate-800">
-            <img className="h-72 w-full object-cover sm:h-[28rem]" src={image} alt={data.name} onError={() => setFailed(true)} />
+          <div className="bg-slate-100 p-3 dark:bg-slate-800 sm:p-4">
+            <img className="h-72 w-full rounded-2xl object-contain sm:h-[28rem]" src={image} alt={data.name} onError={() => setFailed(true)} />
           </div>
           <div className="space-y-4 p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
