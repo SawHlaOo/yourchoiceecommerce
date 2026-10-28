@@ -31,11 +31,6 @@ export const featureFlagsController = {
 
   createFlag: async (req: any, res: any) => {
     try {
-      const user = res.locals.user as { id: number; role?: string };
-      if (user.role !== "ADMIN") {
-        return res.status(403).json({ success: false, error: "Admin access required" });
-      }
-
       const parsed = flagSchema.parse(req.body);
       const flag = await featureFlagsService.createFlag(parsed);
       return res.status(201).json({ success: true, data: flag });
@@ -46,11 +41,6 @@ export const featureFlagsController = {
 
   updateFlag: async (req: any, res: any) => {
     try {
-      const user = res.locals.user as { id: number; role?: string };
-      if (user.role !== "ADMIN") {
-        return res.status(403).json({ success: false, error: "Admin access required" });
-      }
-
       const key = Array.isArray(req.params.key) ? req.params.key[0] : req.params.key;
       if (!key) {
         return res.status(400).json({ success: false, error: "Feature flag key is required" });
@@ -66,11 +56,6 @@ export const featureFlagsController = {
 
   deleteFlag: async (req: any, res: any) => {
     try {
-      const user = res.locals.user as { id: number; role?: string };
-      if (user.role !== "ADMIN") {
-        return res.status(403).json({ success: false, error: "Admin access required" });
-      }
-
       const key = Array.isArray(req.params.key) ? req.params.key[0] : req.params.key;
       if (!key) {
         return res.status(400).json({ success: false, error: "Feature flag key is required" });

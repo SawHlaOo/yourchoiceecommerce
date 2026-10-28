@@ -46,97 +46,52 @@ export const productsController = {
   },
 
   createGame: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     const parsed = createProductSchema.parse(req.body);
     const game = await productsService.createGame(parsed);
     return res.status(201).json({ success: true, data: game });
   },
 
   updateGame: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     const parsed = editProductSchema.parse(req.body);
     const game = await productsService.updateGame(Number(req.params.id), parsed);
     return res.json({ success: true, data: game });
   },
 
   deleteGame: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     await productsService.deleteGame(Number(req.params.id));
     return res.json({ success: true });
   },
 
   createApp: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     const parsed = createProductSchema.parse(req.body);
     const app = await productsService.createApp(parsed);
     return res.status(201).json({ success: true, data: app });
   },
 
   updateApp: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     const parsed = editProductSchema.parse(req.body);
     const app = await productsService.updateApp(Number(req.params.id), parsed);
     return res.json({ success: true, data: app });
   },
 
   deleteApp: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     await productsService.deleteApp(Number(req.params.id));
     return res.json({ success: true });
   },
 
   createPowerPoint: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     const parsed = createProductSchema.parse(req.body);
     const powerpoint = await productsService.createPowerPoint(parsed);
     return res.status(201).json({ success: true, data: powerpoint });
   },
 
   updatePowerPoint: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     const parsed = editProductSchema.parse(req.body);
     const powerpoint = await productsService.updatePowerPoint(Number(req.params.id), parsed);
     return res.json({ success: true, data: powerpoint });
   },
 
   deletePowerPoint: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     await productsService.deletePowerPoint(Number(req.params.id));
     return res.json({ success: true });
   },

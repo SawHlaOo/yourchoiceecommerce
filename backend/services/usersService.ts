@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { signJwt } from "../lib/jwt.js";
 import { usersRepository } from "../repositories/usersRepository.js";
 
 const sanitizeUser = (user: Record<string, unknown>) => {
@@ -21,7 +21,7 @@ export const usersService = {
     const user = await usersRepository.findByUsername(input.username);
 
     if (user && (await bcrypt.compare(input.password, user.password))) {
-      const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
+      const token = signJwt({ id: user.id, role: user.role });
       return {
         user: sanitizeUser(user as Record<string, unknown>),
         token,
@@ -53,7 +53,7 @@ export const usersService = {
       password: await bcrypt.hash(input.password, 10),
     });
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
+    const token = signJwt({ id: user.id, role: user.role });
 
     return {
       user: sanitizeUser(user as Record<string, unknown>),

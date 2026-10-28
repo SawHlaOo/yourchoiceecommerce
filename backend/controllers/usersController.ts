@@ -42,13 +42,8 @@ export const usersController = {
   },
 
   deleteUser: async (req: any, res: any) => {
-    const user = res.locals.user as { role?: string };
-    if (user.role !== "ADMIN") {
-      return res.status(403).json({ success: false, error: "Admin access required" });
-    }
-
     const id = Number(req.params.id);
-    if (Number.isNaN(id)) {
+    if (!Number.isInteger(id) || id < 1) {
       return res.status(400).json({ success: false, error: "Invalid user id" });
     }
 
