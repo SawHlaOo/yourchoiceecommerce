@@ -87,9 +87,9 @@ export default function ProductCardDetail() {
 
             <div className="grid gap-3 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
               <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Availability</span>{hasStock ? 'Available for order' : 'Currently unavailable'}</div>
-              <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Updated</span>{data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : 'Recently'}</div>
-              {data.slug ? <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Slug</span>{data.slug}</div> : null}
               {data.stock !== undefined ? <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Stock</span>{stock}</div> : null}
+              {data.category ? <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Category</span>{data.category}</div> : null}
+              {data.brand ? <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Brand</span>{data.brand}</div> : null}
             </div>
           </div>
         </div>
