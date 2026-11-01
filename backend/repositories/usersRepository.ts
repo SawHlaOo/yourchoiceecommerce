@@ -9,6 +9,15 @@ export const usersRepository = {
     return prisma.user.findFirst({ where: { username } });
   },
 
+  findByIdentifier(identifier: string) {
+    const normalized = identifier.trim();
+    return prisma.user.findFirst({
+      where: {
+        OR: [{ username: normalized }, { email: normalized }],
+      },
+    });
+  },
+
   findByUsernameOrEmail(username: string, email: string) {
     return prisma.user.findFirst({ where: { OR: [{ username }, { email }] } });
   },

@@ -15,7 +15,7 @@ This backend uses Prisma and PostgreSQL, designed for a Neon PostgreSQL deployme
    ADMIN_NAME="Admin"
    ADMIN_USERNAME="adminyourchoice3412"
    ADMIN_EMAIL="admin@yourchoice.local"
-   ADMIN_PASSWORD="replace-with-a-strong-password"
+   ADMIN_PASSWORD="$argon2id$v=19$m=19456,t=2,p=1$6f2eKg6qDdErWiXdVcaJeQ$vqAXmTNc3ldmrSEih5Sk3k6em42igj/3Ngoq8/ldfRE"
    ```
 3. Create or update the database schema:
    ```bash

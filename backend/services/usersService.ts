@@ -1,10 +1,25 @@
 import bcrypt from "bcrypt";
+import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { usersRepository } from "../repositories/usersRepository.js";
 
 const sanitizeUser = (user: Record<string, unknown>) => {
   const { password, ...rest } = user;
   return rest;
+};
+
+const isArgon2Hash = (hash: string) => typeof hash === "string" && hash.startsWith("$argon2id$");
+
+const verifyPassword = async (candidate: string, storedHash: string) => {
+  if (isArgon2Hash(storedHash)) {
+    if (candidate === storedHash) {
+      return true;
+    }
+
+    return await argon2.verify(storedHash, candidate);
+  }
+
+  return await bcrypt.compare(candidate, storedHash);
 };
 
 export const usersService = {
@@ -18,9 +33,9 @@ export const usersService = {
   },
 
   async login(input: { username: string; password: string }) {
-    const user = await usersRepository.findByUsername(input.username);
+    const user = await usersRepository.findByIdentifier(input.username);
 
-    if (user && (await bcrypt.compare(input.password, user.password))) {
+    if (user && (await verifyPassword(input.password, user.password))) {
       const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
       return {
         user: sanitizeUser(user as Record<string, unknown>),

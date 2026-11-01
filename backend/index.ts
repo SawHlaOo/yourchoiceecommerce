@@ -7,6 +7,7 @@ import { isDatabaseConfigured, prisma } from "./lib/prisma.js";
 import { apiRouter } from "./routes/api.js";
 import { apiLimiter } from "./middlewares/rateLimit.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import { bootstrapAdmin } from "./scripts/bootstrapAdmin.js";
 
 const app = express();
 const port = Number(process.env.PORT || 8800);
@@ -891,6 +892,10 @@ export default app;
 // Vercel imports the exported app as a serverless function. Only create a
 // listening server when this module is executed directly for local development.
 if (!process.env.VERCEL) {
+  if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
+    await bootstrapAdmin();
+  }
+
   const server = app.listen(port, () => {
     console.log(`Digitalshop API running at ${port}...`);
   });

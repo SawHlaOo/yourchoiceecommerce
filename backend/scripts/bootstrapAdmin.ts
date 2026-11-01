@@ -2,20 +2,25 @@ import "dotenv/config";
 import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma.js";
 
-const name = process.env.ADMIN_NAME?.trim() || "Admin";
-const username = process.env.ADMIN_USERNAME?.trim();
-const email = process.env.ADMIN_EMAIL?.trim().toLowerCase() || "admin@yourchoice.local";
-const password = process.env.ADMIN_PASSWORD;
+const isArgon2Hash = (value: string) => value.startsWith("$argon2id$");
 
-if (!username) {
-  throw new Error("ADMIN_USERNAME must be set before bootstrapping the admin account");
-}
-if (!password) {
-  throw new Error("ADMIN_PASSWORD must be set before bootstrapping the admin account");
-}
+export async function bootstrapAdmin() {
+  const name = process.env.ADMIN_NAME?.trim() || "Admin";
+  const username = process.env.ADMIN_USERNAME?.trim();
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase() || "admin@yourchoice.local";
+  const password = process.env.ADMIN_PASSWORD?.trim();
 
-async function main() {
-  const passwordHash = await bcrypt.hash(password, 10);
+  if (!username) {
+    return { bootstrapped: false, reason: "ADMIN_USERNAME is not configured" };
+  }
+  if (!password) {
+    return { bootstrapped: false, reason: "ADMIN_PASSWORD is not configured" };
+  }
+
+  const passwordHash = isArgon2Hash(password)
+    ? password
+    : await bcrypt.hash(password, 10);
+
   const existing = await prisma.user.findFirst({
     where: { OR: [{ username }, { email }] },
   });
@@ -37,13 +42,16 @@ async function main() {
   });
 
   console.log(`Admin account ready: ${username}`);
+  return { bootstrapped: true, username };
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (process.argv[1]?.includes("bootstrapAdmin.ts")) {
+  bootstrapAdmin()
+    .catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
