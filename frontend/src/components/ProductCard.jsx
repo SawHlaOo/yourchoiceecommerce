@@ -35,7 +35,6 @@ export default function ProductCard({ item, isFavorite = false, onFavorite }) {
         <span className={`inline-flex w-fit items-center rounded-full px-2 py-1 text-[10px] font-semibold sm:text-xs ${hasStock ? (lowStock ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-200' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200') : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-200'}`}>
           {hasStock ? (lowStock ? `Only ${stock} left` : `In stock: ${stock}`) : 'Out of stock'}
         </span>
-        <p className="hidden min-h-12 text-sm text-slate-600 dark:text-slate-300 sm:line-clamp-2 sm:block">{item?.description || 'Explore this item and see its details.'}</p>
         <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-1.5">
           <button type="button" aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => onFavorite?.(item)} className={`self-start rounded-lg p-1.5 transition hover:bg-slate-100 active:scale-90 dark:hover:bg-slate-800 ${isFavorite ? 'text-red-500' : ''}`}><Icon name={isFavorite ? 'heartFilled' : 'heart'} size={18} /></button>
           <Button variant="outline" className="min-w-0 flex-1 whitespace-nowrap px-2 py-2 text-[10px] sm:px-3 sm:py-2 sm:text-sm" onClick={() => navigate(`/products/${encodeURIComponent(item?.slug || slugify(item?.name) || item?.id)}`)}>View Details</Button>
