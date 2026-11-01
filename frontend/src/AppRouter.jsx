@@ -39,7 +39,6 @@ const router = createBrowserRouter([
       { path: 'wishlist-access', element: page(WishlistAccess) },
       { path: 'products/:id', element: page(ProductCardDetail) },
       { path: 'product-card/:id', element: page(ProductCardDetail) },
-      { path: 'product/:type/:id', element: page(ProductCardDetail) },
       {
         element: <ProtectedRoute />,
         children: [

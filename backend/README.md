@@ -8,10 +8,14 @@ This backend uses Prisma and PostgreSQL, designed for a Neon PostgreSQL deployme
    ```bash
    npm install
    ```
-2. Set `DATABASE_URL` to your Neon PostgreSQL connection URL in the environment or `.env` file:
+2. Set `DATABASE_URL` and the admin bootstrap values in the environment or `.env` file:
    ```bash
    DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<database>?sslmode=require"
    JWT_SECRET="<your-secret>"
+   ADMIN_NAME="Admin"
+   ADMIN_USERNAME="adminyourchoice3412"
+   ADMIN_EMAIL="admin@yourchoice.local"
+   ADMIN_PASSWORD="replace-with-a-strong-password"
    ```
 3. Create or update the database schema:
    ```bash
@@ -54,7 +58,7 @@ The current API is exposed under the explicit `/api/v1` base path. Resource
 routes remain modular under `routes/`, with controllers delegating business
 logic to services. Examples:
 
-- `GET /api/v1/games`
+- `GET /api/v1/products`
 - `POST /api/v1/login`
 - `GET /api/v1/feature-flags`
 

@@ -2,23 +2,17 @@ import "dotenv/config";
 import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma.js";
 
-const requiredVariables = [
-  "ADMIN_NAME",
-  "ADMIN_USERNAME",
-  "ADMIN_EMAIL",
-  "ADMIN_PASSWORD",
-] as const;
+const name = process.env.ADMIN_NAME?.trim() || "Admin";
+const username = process.env.ADMIN_USERNAME?.trim();
+const email = process.env.ADMIN_EMAIL?.trim().toLowerCase() || "admin@yourchoice.local";
+const password = process.env.ADMIN_PASSWORD;
 
-for (const variable of requiredVariables) {
-  if (!process.env[variable]?.trim()) {
-    throw new Error(`${variable} must be set before bootstrapping the admin account`);
-  }
+if (!username) {
+  throw new Error("ADMIN_USERNAME must be set before bootstrapping the admin account");
 }
-
-const name = process.env.ADMIN_NAME!.trim();
-const username = process.env.ADMIN_USERNAME!.trim();
-const email = process.env.ADMIN_EMAIL!.trim().toLowerCase();
-const password = process.env.ADMIN_PASSWORD!;
+if (!password) {
+  throw new Error("ADMIN_PASSWORD must be set before bootstrapping the admin account");
+}
 
 async function main() {
   const passwordHash = await bcrypt.hash(password, 10);

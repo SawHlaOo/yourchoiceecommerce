@@ -8,7 +8,7 @@ const productFields = {
   price: money,
   originalPrice: money.optional(),
   brand: z.string().trim().min(1).optional(),
-  category: z.string().trim().min(1).optional(),
+  categories: z.array(z.string().trim().min(1)).max(20).optional(),
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
   stock: z.number().int().nonnegative(),
   badge: z.string().trim().optional(),

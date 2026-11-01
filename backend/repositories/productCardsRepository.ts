@@ -11,7 +11,7 @@ const summarySelect = {
   price: true,
   originalPrice: true,
   brand: true,
-  category: true,
+  categories: true,
   slug: true,
   stock: true,
   badge: true,
@@ -25,7 +25,7 @@ export const productCardsRepository = {
   list(filters?: { category?: string; activeOnly?: boolean }) {
     return prisma.productCard.findMany({
       where: {
-        ...(filters?.category ? { category: filters.category } : {}),
+        ...(filters?.category ? { categories: { has: filters.category } } : {}),
         ...(filters?.activeOnly ? { isActive: true } : {}),
       },
       orderBy: { createdAt: "desc" },

@@ -8,7 +8,7 @@ type ProductInput = {
   price: number;
   originalPrice?: number;
   brand?: string;
-  category?: string;
+  categories?: string[];
   slug?: string;
   stock: number;
   badge?: string;
@@ -64,7 +64,7 @@ function toCreateData(input: ProductInput): Prisma.ProductCardCreateInput {
     price: new Prisma.Decimal(input.price),
     originalPrice: input.originalPrice === undefined ? null : new Prisma.Decimal(input.originalPrice),
     brand: input.brand,
-    category: input.category,
+    categories: input.categories ?? [],
     slug: input.slug,
     stock: input.stock,
     badge: input.badge,
@@ -80,7 +80,7 @@ function toUpdateData(input: Partial<ProductInput>): Prisma.ProductCardUpdateInp
     ...(input.price !== undefined ? { price: new Prisma.Decimal(input.price) } : {}),
     ...(input.originalPrice !== undefined ? { originalPrice: input.originalPrice === null ? null : new Prisma.Decimal(input.originalPrice) } : {}),
     ...(input.brand !== undefined ? { brand: input.brand } : {}),
-    ...(input.category !== undefined ? { category: input.category } : {}),
+    ...(input.categories !== undefined ? { categories: input.categories } : {}),
     ...(input.slug !== undefined ? { slug: input.slug } : {}),
     ...(input.stock !== undefined ? { stock: input.stock } : {}),
     ...(input.badge !== undefined ? { badge: input.badge } : {}),
