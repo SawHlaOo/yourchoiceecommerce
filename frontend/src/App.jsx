@@ -8,6 +8,7 @@ const socialLinks = [
   { label: 'Instagram', href: import.meta.env.VITE_INSTAGRAM_URL?.trim() || 'https://www.instagram.com/', icon: '◎' },
   { label: 'Facebook', href: import.meta.env.VITE_FACEBOOK_URL?.trim() || 'https://www.facebook.com/', icon: 'f' },
 ];
+const phoneNumber = import.meta.env.VITE_PHONE_NUMBER?.trim() || '+95 9 123 456 789';
 
 export default function App() {
   return (
@@ -27,6 +28,10 @@ export default function App() {
               </a>
             ))}
           </div>
+          <a href={`tel:${phoneNumber.replace(/[^\d+]/g, '')}`} className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-slate-700 transition hover:border-blue-500 hover:text-blue-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-300">
+            <span aria-hidden="true">☎</span>
+            <span>{phoneNumber}</span>
+          </a>
         </div>
       </footer>
     </div>
