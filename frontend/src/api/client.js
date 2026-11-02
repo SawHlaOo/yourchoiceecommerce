@@ -36,6 +36,16 @@ async function request(path, { method = 'GET', body, headers = {}, auth = true }
     if (data) {
       if (typeof data.error === 'string') {
         errMsg = data.error;
+        if (data.details && typeof data.details === 'object') {
+          const fields = Object.entries(data.details)
+            .filter(([field]) => field !== '_errors')
+            .map(([field, detail]) => {
+              const messages = Array.isArray(detail?._errors) ? detail._errors : [];
+              return messages.length ? `${field}: ${messages.join(', ')}` : null;
+            })
+            .filter(Boolean);
+          if (fields.length) errMsg = `${errMsg}: ${fields.join('; ')}`;
+        }
       } else if (data.error) {
         try {
           errMsg = JSON.stringify(data.error, null, 2);
