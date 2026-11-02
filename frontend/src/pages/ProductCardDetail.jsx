@@ -26,7 +26,6 @@ export default function ProductCardDetail() {
   const hasStock = stock > 0;
   const lowStock = hasStock && stock <= 5;
   const available = data?.isActive !== false;
-  const categories = data?.categories || (data?.category ? [data.category] : []);
 
   if (isLoading) {
     return <div className="flex justify-center py-16"><Spinner /></div>;
@@ -54,14 +53,13 @@ export default function ProductCardDetail() {
           <div className="space-y-4 p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h1 className="text-2xl font-black sm:text-4xl">{data.name}</h1>
-              <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-200">{data.badge || categories[0] || 'Featured'}</span>
+              <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-200">{data.badge || 'Featured'}</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
               <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${hasStock ? (lowStock ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-200' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200') : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-200'}`}>
                 {hasStock ? (lowStock ? `Only ${stock} left in stock` : `In stock: ${stock}`) : 'Out of stock'}
               </span>
-              {categories.map((category) => <span key={category} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">{category}</span>)}
               {data.brand ? <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">{data.brand}</span> : null}
             </div>
 
@@ -84,7 +82,6 @@ export default function ProductCardDetail() {
             <div className="grid gap-3 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
               <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Availability</span>{hasStock ? 'Available for order' : 'Currently unavailable'}</div>
               {data.stock !== undefined ? <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Stock</span>{stock}</div> : null}
-              {categories.length ? <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Categories</span>{categories.join(', ')}</div> : null}
               {data.brand ? <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"><span className="block font-semibold text-slate-900 dark:text-white">Brand</span>{data.brand}</div> : null}
             </div>
           </div>
