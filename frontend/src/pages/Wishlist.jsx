@@ -20,7 +20,7 @@ export default function Wishlist() {
   });
   if (wishlist.isLoading) return <div className="flex justify-center py-16"><Spinner label="Loading wishlist" /></div>;
   if (wishlist.error) return <Alert severity="error">{wishlist.error.message}</Alert>;
-  return <div className="py-4"><div className="mb-6"><h1 className="text-3xl font-extrabold">Wishlist</h1><p className="text-slate-500">Save products you want to buy later.</p></div>
-    {!wishlist.data.length ? <Alert>Your wishlist is empty.</Alert> : <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">{wishlist.data.map((entry) => { const product = productFromItem(entry); return <ProductCard key={entry.id || product.id} item={product} isFavorite onFavorite={() => removeMutation.mutate(product.id)} />; })}</div>}
+  return <div className="py-2 sm:py-4"><div className="mb-8"><p className="mb-2 text-xs font-bold uppercase tracking-[.2em] text-blue-600 dark:text-blue-400">Saved for later</p><h1 className="text-3xl font-black tracking-tight">Wishlist</h1><p className="mt-2 text-slate-500">Save products you want to buy later.</p></div>
+    {!wishlist.data.length ? <Alert>Your wishlist is empty.</Alert> : <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">{wishlist.data.map((entry) => { const product = productFromItem(entry); return <ProductCard key={entry.id || product.id} item={product} isFavorite onFavorite={() => removeMutation.mutate(product.id)} />; })}</div>}
   </div>;
 }

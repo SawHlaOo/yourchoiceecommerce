@@ -19,9 +19,10 @@ export default function Register() {
       navigate('/');
     } catch (err) { setError(err.message || 'Unable to create account'); }
   };
-  return <div className="mx-auto max-w-md py-8"><Card className="p-6 sm:p-8">
-    <h1 className="text-3xl font-bold">Create an account</h1>
+  return <div className="mx-auto max-w-md py-8"><Card className="p-6 sm:p-9">
+    <div className="mb-7"><p className="mb-2 text-xs font-bold uppercase tracking-[.2em] text-blue-600 dark:text-blue-400">Join the community</p><h1 className="text-3xl font-black tracking-tight">Create an account</h1>
     <p className="mt-2 text-slate-600 dark:text-slate-400">Join Digitalshop to grab the best offers.</p>
+    </div>
     {error ? <Alert severity="error" className="mt-4">{error}</Alert> : null}
     <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <Field label="Name" autoComplete="name" {...register('name', { required: 'Name is required' })} error={errors.name?.message} />

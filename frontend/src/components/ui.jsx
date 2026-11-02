@@ -49,28 +49,28 @@ export function Button({ children, variant = 'primary', className = '', as: Comp
     telegram: 'bg-sky-500 text-white hover:bg-sky-600 disabled:bg-sky-300 dark:bg-sky-500 dark:hover:bg-sky-400',
     ghost: 'text-slate-700 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800',
   };
-  return <Component className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`} {...props}>{children}</Component>;
+  return <Component className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-sm ${variants[variant]} ${className}`} {...props}>{children}</Component>;
 }
 
 export function Field({ label, error, className = '', ...props }) {
   return (
-    <label className={`block text-sm font-medium text-slate-700 dark:text-slate-200 ${className}`}>
+    <label className={`block text-sm font-semibold text-slate-700 dark:text-slate-200 ${className}`}>
       <span className="mb-1.5 block">{label}</span>
-      <input className={`block w-full rounded-lg border bg-white px-3 py-2.5 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-white ${error ? 'border-red-500' : 'border-slate-300'}`} {...props} />
+      <input className={`block w-full rounded-xl border bg-white px-3.5 py-3 text-slate-900 shadow-sm outline-none transition duration-200 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:border-slate-600 dark:bg-slate-900 dark:text-white ${error ? 'border-red-500' : 'border-slate-300'}`} {...props} />
       {error ? <span className="mt-1 block text-xs text-red-600 dark:text-red-400">{error}</span> : null}
     </label>
   );
 }
 
 export function Card({ children, className = '' }) {
-  return <div className={`rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900 ${className}`}>{children}</div>;
+  return <div className={`rounded-3xl border border-slate-200/80 bg-white/95 shadow-[0_12px_40px_-20px_rgba(15,23,42,.35)] dark:border-slate-700 dark:bg-slate-900 ${className}`}>{children}</div>;
 }
 
 export function Modal({ open, onClose, title, children, actions }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="modal-title" className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section role="dialog" aria-modal="true" aria-labelledby="modal-title" className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-white/70 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:p-8">
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 id="modal-title" className="text-xl font-bold text-slate-900 dark:text-white">{title}</h2>
           <button type="button" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" onClick={onClose} aria-label="Close dialog"><Icon name="close" /></button>

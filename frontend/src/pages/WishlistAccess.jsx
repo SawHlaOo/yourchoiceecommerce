@@ -16,8 +16,8 @@ export default function WishlistAccess() {
   return (
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center py-10">
       <Card className="w-full max-w-xl overflow-hidden">
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-6 py-10 text-center text-white sm:px-10">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-6 py-12 text-center text-white sm:px-12">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-white/15 shadow-lg shadow-blue-950/10">
             <Icon name="heartFilled" size={32} />
           </div>
           <h1 className="mt-5 text-3xl font-black sm:text-4xl">Your wishlist is waiting</h1>

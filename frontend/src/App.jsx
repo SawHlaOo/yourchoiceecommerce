@@ -15,10 +15,10 @@ export default function App() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <AppDrawer />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <Outlet />
       </main>
-      <footer className="border-t border-slate-200 bg-white/80 py-6 dark:border-slate-700 dark:bg-slate-900/80">
+      <footer className="mt-12 border-t border-slate-200/80 bg-white/75 py-8 backdrop-blur dark:border-slate-700 dark:bg-slate-900/75">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:px-6 lg:flex-row lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-3 text-sm font-medium">
             {socialLinks.map((link) => (

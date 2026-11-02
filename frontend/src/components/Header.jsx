@@ -19,14 +19,14 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b bg-white/95 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
-      <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-2 px-4 sm:px-6 lg:px-8">
-        <button type="button" aria-label="Open navigation" className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800" onClick={() => setOpenDrawer(true)}><Icon name="menu" /></button>
-        <button type="button" onClick={() => navigate('/', { state: { resetHome: true } })} className="mr-auto text-left text-lg font-extrabold tracking-tight text-blue-600 dark:text-blue-400">Your Choice</button>
+    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/85">
+      <div className="mx-auto flex min-h-[4.5rem] max-w-7xl items-center gap-2 px-4 sm:px-6 lg:px-8">
+        <button type="button" aria-label="Open navigation" className="rounded-xl p-2.5 text-slate-600 transition hover:bg-slate-100 hover:text-blue-600 active:scale-90 dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => setOpenDrawer(true)}><Icon name="menu" /></button>
+        <button type="button" onClick={() => navigate('/', { state: { resetHome: true } })} className="mr-auto rounded-xl px-2 py-1 text-left text-lg font-black tracking-tight text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-slate-800">Your Choice<span className="ml-1 text-slate-900 dark:text-white">.</span></button>
         <nav className="hidden items-center gap-1 sm:flex">
-          {user ? <Button variant="ghost" onClick={() => navigate(`/profile/${user.id}`)}>Profile</Button> : <><Button variant="ghost" onClick={() => navigate('/login')}>Sign in</Button><Button variant="ghost" onClick={() => navigate('/register')}>Sign up</Button></>}
-          {isAdmin && location.pathname !== '/admin' ? <Button variant="ghost" onClick={() => navigate('/admin')}>Admin</Button> : null}
-          <Button variant="ghost" onClick={openWishlist}><Icon name="heart" size={17} />Wishlist{user && wishlist.data?.length ? ` (${wishlist.data.length})` : ''}</Button>
+          {user ? <Button variant="ghost" className="!min-h-9 !rounded-lg !px-3 !shadow-none !hover:translate-y-0 !hover:shadow-none" onClick={() => navigate(`/profile/${user.id}`)}>Profile</Button> : <><Button variant="ghost" onClick={() => navigate('/login')}>Sign in</Button><Button variant="ghost" onClick={() => navigate('/register')}>Sign up</Button></>}
+          {isAdmin && location.pathname !== '/admin' ? <Button variant="ghost" className="!min-h-9 !rounded-lg !px-3 !shadow-none !hover:translate-y-0 !hover:shadow-none" onClick={() => navigate('/admin')}>Admin</Button> : null}
+          <Button variant="ghost" className="!min-h-9 !rounded-lg !px-3 !shadow-none !hover:translate-y-0 !hover:shadow-none" onClick={openWishlist}><Icon name="heart" size={17} />Wishlist{user && wishlist.data?.length ? ` (${wishlist.data.length})` : ''}</Button>
         </nav>
         <nav className="flex items-center gap-0.5 sm:hidden" aria-label="Quick navigation">
           <button type="button" aria-label={user ? 'Open profile' : 'Open login'} className="rounded-lg p-2 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600 active:scale-90 dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => navigate(user ? `/profile/${user.id}` : '/login')}><Icon name="user" size={18} /></button>
