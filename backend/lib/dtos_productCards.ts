@@ -15,14 +15,6 @@ const productFields = {
   isActive: z.boolean().optional(),
 };
 
-export const createProductCardSchema = z.object(productFields).superRefine((value, ctx) => {
-  if (value.originalPrice !== undefined && value.originalPrice < value.price) {
-    ctx.addIssue({ code: "custom", path: ["originalPrice"], message: "Original price must be at least the current price" });
-  }
-});
+export const createProductCardSchema = z.object(productFields);
 
-export const updateProductCardSchema = z.object(productFields).partial().superRefine((value, ctx) => {
-  if (value.originalPrice !== undefined && value.price !== undefined && value.originalPrice < value.price) {
-    ctx.addIssue({ code: "custom", path: ["originalPrice"], message: "Original price must be at least the current price" });
-  }
-});
+export const updateProductCardSchema = z.object(productFields).partial();
