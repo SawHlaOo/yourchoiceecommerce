@@ -1,11 +1,25 @@
+
+
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
 const API_URL = (configuredApiUrl || (import.meta.env.DEV ? 'http://localhost:8800' : '')).replace(/\/+$/, '');
 const API_VERSION = '/api/v1';
 
+function getRequestErrorMessage(status) {
+  if (status === 400) return 'Please check the information you entered and try again.';
+  if (status === 401) return 'We could not verify your sign-in. Please sign in again.';
+  if (status === 403) return 'You do not have permission to do that.';
+  if (status === 404) return 'We could not find what you were looking for.';
+  if (status === 409) return 'This request conflicts with existing information. Please review and try again.';
+  if (status === 429) return 'Too many requests. Please wait a moment and try again.';
+  if (status >= 500) return 'Something went wrong on our end. Please try again shortly.';
+  return 'We could not complete your request. Please try again.';
+}
+
 async function request(path, { method = 'GET', body, headers = {}, auth = true } = {}) {
   if (!API_URL) {
-    throw new Error('The app is not configured. Set VITE_API_URL in the Vercel environment variables and redeploy.');
+    throw new Error('The service is temporarily unavailable. Please try again later.');
   }
+
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const options = {
@@ -16,7 +30,7 @@ async function request(path, { method = 'GET', body, headers = {}, auth = true }
       ...headers,
     },
   };
-
+//METHOD + URL + HEADERS + BODY
   if (body !== undefined) {
     options.body = JSON.stringify(body);
   }
@@ -25,48 +39,18 @@ async function request(path, { method = 'GET', body, headers = {}, auth = true }
   try {
     response = await fetch(`${API_URL}${API_VERSION}${path}`, options);
   } catch {
-    throw new Error('Unable to reach the API. Please try again shortly.');
+    throw new Error('Unable to connect right now. Please check your connection and try again.');
   }
-  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    // Normalize error shapes from the server so the UI can display readable messages.
-    // If the server returns a structured error (object/array), stringify it for display.
-    let errMsg = 'Request failed';
-    if (data) {
-      if (typeof data.error === 'string') {
-        errMsg = data.error;
-        if (data.details && typeof data.details === 'object') {
-          const fields = Object.entries(data.details)
-            .filter(([field]) => field !== '_errors')
-            .map(([field, detail]) => {
-              const messages = Array.isArray(detail?._errors) ? detail._errors : [];
-              return messages.length ? `${field}: ${messages.join(', ')}` : null;
-            })
-            .filter(Boolean);
-          if (fields.length) errMsg = `${errMsg}: ${fields.join('; ')}`;
-        }
-      } else if (data.error) {
-        try {
-          errMsg = JSON.stringify(data.error, null, 2);
-        } catch {
-          errMsg = String(data.error);
-        }
-      } else if (typeof data.msg === 'string') {
-        errMsg = data.msg;
-      } else {
-        try {
-          errMsg = JSON.stringify(data);
-        } catch {
-          errMsg = String(data);
-        }
-      }
-    }
-
-    throw new Error(errMsg || 'Request failed');
+    throw new Error(getRequestErrorMessage(response.status));
   }
 
-  return data;
+  try {
+    return await response.json();
+  } catch {
+    throw new Error('We could not process the response. Please try again.');
+  }
 }
 
 export const api = { request };

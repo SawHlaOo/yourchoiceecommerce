@@ -20,8 +20,11 @@ function CatalogSection({ title, items, isLoading, isError, error, onRetry, sear
 }
 
 export default function Home() {
-  const [search, setSearch] = useState(''); const [filter, setFilter] = useState('');
-  const { mode, user } = useApp(); const navigate = useNavigate(); const queryClient = useQueryClient();
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('');
+  const { mode, user } = useApp();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const featureFlags = useQuery({ queryKey: ['feature-flags'], queryFn: featureFlagApi.list, select: (response) => response?.data ?? [] });
   const products = useQuery({ queryKey: ['products'], queryFn: () => productApi.listProducts(), retry: 2, select: (response) => response?.data ?? [] });
   const wishlist = useQuery({ queryKey: ['wishlist'], queryFn: productApi.listWishlist, enabled: Boolean(user), select: (response) => response?.data ?? [] });
