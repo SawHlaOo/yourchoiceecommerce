@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router';
 import { productApi } from '../api/productApi';
 import { Alert, Button, Card, Spinner } from '../components/ui';
+import { getTelegramProductUrl } from '../utils/telegram';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80';
 
@@ -71,7 +72,7 @@ export default function ProductCardDetail() {
 
             <div className="flex flex-wrap gap-3">
               <Button onClick={() => navigate('/')}>Back to catalog</Button>
-              {hasStock ? <Button variant="telegram" onClick={() => window.open(import.meta.env.VITE_TELEGRAM_URL || 'https://t.me/', '_blank', 'noopener,noreferrer')}>Buy in Telegram</Button> : <Button variant="ghost" disabled>Unavailable</Button>}
+              {hasStock ? <Button variant="telegram" onClick={() => window.open(getTelegramProductUrl(data.id), '_blank', 'noopener,noreferrer')}>Buy in Telegram</Button> : <Button variant="ghost" disabled>Unavailable</Button>}
             </div>
 
             <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/70">

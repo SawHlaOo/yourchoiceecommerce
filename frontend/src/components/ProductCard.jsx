@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router';
 import { Button, Icon } from './ui';
+import { getTelegramProductUrl } from '../utils/telegram';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80';
-const TELEGRAM_URL = import.meta.env.VITE_TELEGRAM_URL?.trim() || 'https://t.me/';
 
 const slugify = (value) => String(value ?? '')
   .toLowerCase()
@@ -38,7 +38,7 @@ export default function ProductCard({ item, isFavorite = false, onFavorite }) {
         <div className="mt-auto flex flex-col gap-2.5 pt-2 sm:flex-row sm:items-center sm:gap-2">
           <button type="button" aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => onFavorite?.(item)} className={`order-3 self-center rounded-xl p-2 transition hover:bg-slate-100 hover:text-red-500 active:scale-90 sm:order-none ${isFavorite ? 'text-red-500' : 'text-slate-400'} dark:hover:bg-slate-800`}><Icon name={isFavorite ? 'heartFilled' : 'heart'} size={19} /></button>
           <Button variant="outline" className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[10px] sm:px-3 sm:text-sm" onClick={() => navigate(`/products/${encodeURIComponent(item?.slug || slugify(item?.name) || item?.id)}`)}>View Details</Button>
-          <Button variant="telegram" className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[10px] sm:px-4 sm:text-sm" onClick={() => window.open(TELEGRAM_URL, '_blank', 'noopener,noreferrer')}>Buy now</Button>
+          <Button variant="telegram" className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[10px] sm:px-4 sm:text-sm" onClick={() => window.open(getTelegramProductUrl(item?.id), '_blank', 'noopener,noreferrer')}>Buy now</Button>
         </div>
       </div>
     </article>

@@ -23,6 +23,9 @@ VITE_FACEBOOK_URL=https://www.facebook.com/
 
 Vite embeds this variable at build time, so redeploy after changing it. The
 backend must allow the deployed frontend origin through `FRONTEND_URLS`.
+Set `VITE_TELEGRAM_URL` to your bot's `https://t.me/<bot_username>` URL.
+Product purchase buttons add a product-specific `/start` payload so the bot can
+show that product's current details.
 
 ## Checks
 

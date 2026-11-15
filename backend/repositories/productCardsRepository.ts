@@ -38,6 +38,23 @@ export const productCardsRepository = {
       select: summarySelect,
     });
   },
+  searchByName(query: string) {
+    const terms = query.trim().split(/\s+/).filter(Boolean);
+    return prisma.productCard.findMany({
+      where: {
+        isActive: true,
+        AND: terms.map((term) => ({
+          OR: [
+            { name: { contains: term, mode: "insensitive" as const } },
+            { brand: { contains: term, mode: "insensitive" as const } },
+          ],
+        })),
+      },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include,
+    });
+  },
   findById(id: number) {
     return prisma.productCard.findUnique({ where: { id }, include });
   },

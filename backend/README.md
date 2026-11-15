@@ -32,6 +32,12 @@ This backend uses Prisma and PostgreSQL, designed for a Neon PostgreSQL deployme
 
 If you see `The table ... does not exist` when querying the API, run `npm run db:push` to sync the Prisma schema with the database. If there is no data yet, run `npm run db:seed` to populate sample catalog and feature flag records.
 
+## Telegram customer reply bot
+
+Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ADMIN_CHAT_ID` in the backend `.env` to enable the bot and seller purchase notifications. The bot searches active `ProductCard` records through the existing product service and does not store Telegram customer data in a separate table.
+
+Telegram long polling runs only when the backend starts as a persistent Node.js process (for example, with `npm run dev` or `npm start`). It is intentionally not started when `VERCEL` is set because Vercel functions do not keep a persistent polling process alive. Keep both Telegram values in the backend environment only; do not expose them to the frontend.
+
 Vercel deployment notes
 
 - Deploy `backend` as its own Vercel project (set **Root Directory** to `backend`).

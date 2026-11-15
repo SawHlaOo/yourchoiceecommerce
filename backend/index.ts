@@ -8,6 +8,7 @@ import { apiRouter } from "./routes/api.js";
 import { apiLimiter } from "./middlewares/rateLimit.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { bootstrapAdmin } from "./scripts/bootstrapAdmin.js";
+import { startTelegramBot } from "./services/telegramBotService.js";
 
 const app = express();
 const port = Number(process.env.PORT || 8800);
@@ -896,6 +897,7 @@ if (!process.env.VERCEL) {
     await bootstrapAdmin();
   }
 
+  const stopTelegramBot = startTelegramBot();
   const server = app.listen(port, () => {
     console.log(`Digitalshop API running at ${port}...`);
   });
@@ -903,6 +905,7 @@ if (!process.env.VERCEL) {
   async function shutdown(signal: string) {
     console.log(`Received ${signal}, shutting down...`);
     try {
+      await stopTelegramBot?.();
       await prisma.$disconnect();
       server.close(() => {
         console.log('HTTP server closed');

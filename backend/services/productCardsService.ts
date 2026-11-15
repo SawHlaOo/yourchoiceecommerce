@@ -101,6 +101,12 @@ export const productCardsService = {
     const products = await productCardsRepository.listSummary();
     return products.map(toSummaryResponse);
   },
+  async searchByName(query: string) {
+    const products = await productCardsRepository.searchByName(query);
+    return products
+      .map(toResponse)
+      .filter((product): product is NonNullable<typeof product> => product !== null);
+  },
   async get(id: number) {
     return toResponse(await productCardsRepository.findById(id));
   },
