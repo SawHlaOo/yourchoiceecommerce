@@ -1,6 +1,7 @@
 allowBuilds:
   '@prisma/engines': true
   '@scarf/scarf': false
+  argon2: true
   bcrypt: true
   better-sqlite3: false
   esbuild: true
