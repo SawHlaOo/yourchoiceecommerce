@@ -8,7 +8,7 @@ import { apiRouter } from "./routes/api.js";
 import { apiLimiter } from "./middlewares/rateLimit.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { bootstrapAdmin } from "./scripts/bootstrapAdmin.js";
-import { startTelegramBot } from "./services/telegramBotService.js";
+import { getTelegramWebhookHandler, startTelegramBot } from "./services/telegramBotService.js";
 
 const app = express();
 const port = Number(process.env.PORT || 8800);
@@ -849,6 +849,40 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
+app.post("/telegram/webhook", async (req, res, next) => {
+  const webhookHandler = getTelegramWebhookHandler();
+  if (!webhookHandler) {
+    res.status(503).json({ error: "Telegram webhook is not configured" });
+    return;
+  }
+
+  if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+    res.status(400).json({ error: "Invalid Telegram update" });
+    return;
+  }
+
+  try {
+    const headers = new Headers({ "content-type": "application/json" });
+    const secretToken = req.get("X-Telegram-Bot-Api-Secret-Token");
+    if (secretToken) headers.set("X-Telegram-Bot-Api-Secret-Token", secretToken);
+
+    const request = new Request("https://telegram-webhook.local", {
+      method: "POST",
+      headers,
+      body: JSON.stringify(req.body),
+    });
+    const response = await webhookHandler(request);
+    const responseBody = await response.text();
+    res.status(response.status);
+    if (responseBody) {
+      res.send(responseBody);
+    } else {
+      res.end();
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 app.use(apiLimiter);
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));

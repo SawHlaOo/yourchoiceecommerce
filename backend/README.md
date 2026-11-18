@@ -34,9 +34,17 @@ If you see `The table ... does not exist` when querying the API, run `npm run db
 
 ## Telegram customer reply bot
 
-Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ADMIN_CHAT_ID` in the backend `.env` to enable the bot and seller purchase notifications. The bot searches active `ProductCard` records through the existing product service and does not store Telegram customer data in a separate table.
+Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ADMIN_CHAT_ID` in the backend environment to enable the bot and seller purchase notifications. Set `TELEGRAM_WEBHOOK_SECRET` to a random 1-256 character value containing only letters, numbers, underscores, or hyphens. The bot searches active `ProductCard` records through the existing product service and does not store Telegram customer data in a separate table.
 
-Telegram long polling runs only when the backend starts as a persistent Node.js process (for example, with `npm run dev` or `npm start`). It is intentionally not started when `VERCEL` is set because Vercel functions do not keep a persistent polling process alive. Keep both Telegram values in the backend environment only; do not expose them to the frontend.
+The backend accepts Telegram updates at `POST /telegram/webhook` and verifies Telegram's `X-Telegram-Bot-Api-Secret-Token` header. On Vercel, add `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID`, and `TELEGRAM_WEBHOOK_SECRET` to the backend project's environment variables.
+
+Register the webhook once after deployment by making `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, and `TELEGRAM_WEBHOOK_URL` available to a local backend shell, where `TELEGRAM_WEBHOOK_URL` is `https://<your-backend-domain>/telegram/webhook`, then run:
+
+```bash
+pnpm telegram:set-webhook
+```
+
+The registration command only prints whether it succeeded; it never prints the bot token or webhook secret. Do not run the local long-polling bot with the same token while the webhook is active. The long poller is intentionally not started when `VERCEL` is set. Keep Telegram credentials in the backend environment only; do not expose them to the frontend.
 
 Vercel deployment notes
 

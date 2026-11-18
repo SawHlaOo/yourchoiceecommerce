@@ -1,4 +1,4 @@
-import { Bot, type Context } from "node-telegram-bot-api";
+import { Bot, type Context, webhookCallback } from "node-telegram-bot-api";
 import { productCardsService } from "./productCardsService.js";
 
 const welcomeMessage = [
@@ -87,11 +87,7 @@ function extractProductQuery(text: string) {
     .trim();
 }
 
-export function startTelegramBot(): (() => Promise<void>) | undefined {
-  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
-  if (!token) return undefined;
-
-  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+function configureTelegramBot(token: string, adminChatId: string | undefined) {
   if (!adminChatId) {
     console.warn("[telegram] TELEGRAM_ADMIN_CHAT_ID is not configured; seller notifications are disabled");
   }
@@ -164,6 +160,37 @@ export function startTelegramBot(): (() => Promise<void>) | undefined {
     await replyWithPurchaseDetails(ctx, bot, product, adminChatId, text);
   });
 
+  return bot;
+}
+
+type TelegramWebhookHandler = ReturnType<typeof webhookCallback>;
+
+let cachedWebhook:
+  | { token: string; secretToken: string; handler: TelegramWebhookHandler }
+  | undefined;
+
+export function getTelegramWebhookHandler(): TelegramWebhookHandler | undefined {
+  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
+  if (!token || !secretToken) return undefined;
+
+  if (cachedWebhook?.token === token && cachedWebhook.secretToken === secretToken) {
+    return cachedWebhook.handler;
+  }
+
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim() || undefined;
+  const bot = configureTelegramBot(token, adminChatId);
+  const handler = webhookCallback(bot, { secretToken });
+  cachedWebhook = { token, secretToken, handler };
+  return handler;
+}
+
+export function startTelegramBot(): (() => Promise<void>) | undefined {
+  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  if (!token) return undefined;
+
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim() || undefined;
+  const bot = configureTelegramBot(token, adminChatId);
   const polling = bot.startPolling().catch((error) => {
     console.error("[telegram] polling stopped unexpectedly", error);
   });
